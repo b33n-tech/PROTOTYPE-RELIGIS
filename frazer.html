@@ -620,22 +620,24 @@
     </main>
 
     <script>
-        // Load user session
-        window.addEventListener('DOMContentLoaded', () => {
+        function initSupabaseClient() {
+            try {
+                return typeof window.supabase !== 'undefined';
+            } catch (error) {
+                console.error('Supabase initialization failed:', error);
+                return false;
+            }
+        }
+
+        function loadUserSession() {
             const prenom = sessionStorage.getItem('user_prenom') || 'Invité';
             const nom = sessionStorage.getItem('user_nom') || '';
             const isGuest = sessionStorage.getItem('user_is_guest') === 'true';
             
             const displayName = nom ? `${prenom} ${nom}` : prenom;
             document.getElementById('userDisplay').textContent = displayName + (isGuest ? ' (invité)' : '');
-        });
-            if (typeof trackCurrentPage === 'function') {
-            await trackCurrentPage('frazer');
         }
-        // --------------------------------
-    });
 
-        // Handle QR image loading
         function handleQRImage() {
             const img = document.querySelector('.qr-image');
             const placeholder = document.getElementById('placeholder');
@@ -646,8 +648,20 @@
             });
         }
 
-        window.addEventListener('DOMContentLoaded', handleQRImage);
+        document.addEventListener('DOMContentLoaded', async () => {
+            const isClientReady = initSupabaseClient();
+            
+            if (isClientReady) {
+                if (typeof trackCurrentPage === 'function') {
+                    await trackCurrentPage('frazer');
+                }
+                
+                loadUserSession();
+                handleQRImage();
+            } else {
+                console.error("L'application n'a pas pu démarrer : Supabase est indisponible.");
+            }
+        });
     </script>
-    <!-- ... le contenu de ta page ... -->
 </body>
 </html>
