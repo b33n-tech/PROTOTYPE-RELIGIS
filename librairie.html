@@ -632,33 +632,6 @@
         }
 
         // ===========================
-        // FONCTION DE LOGGING
-        // ===========================
-        async function logVisit(userRef, pageName) {
-            try {
-                const userRefValue = userRef || sessionStorage.getItem('user_ref');
-                if (!userRefValue || userRefValue === 'null') {
-                    console.log('[LOG] Accès invité - pas de logging');
-                    return;
-                }
-
-                console.log(`[LOG] Enregistrement visite: user_ref=${userRefValue}, page=${pageName}`);
-
-                const { error } = await sbClient
-                    .from('logs_website')
-                    .insert([{ user_id: userRefValue, page: pageName }]);
-
-                if (error) {
-                    console.error('[LOG ERROR]', error);
-                } else {
-                    console.log(`[LOG] Visite enregistrée avec succès`);
-                }
-            } catch (err) {
-                console.error('[LOG FATAL]', err);
-            }
-        }
-
-        // ===========================
         // LOGIQUE MÉTIER : Charger les contenus
         // ===========================
         async function loadContents() {
@@ -681,7 +654,6 @@
                 filteredContents = allContents;
 
                 renderContentList();
-                logVisit(null, 'library_page');
 
                 return true;
 
@@ -819,7 +791,6 @@
             document.getElementById('btnOpenResource').addEventListener('click', () => {
                 if (selectedContent.URL) {
                     window.open(selectedContent.URL, '_blank');
-                    logVisit(null, `content_opened_${selectedContent.REF}`);
                 }
             });
 
@@ -925,14 +896,7 @@
             console.log('[INIT] Page Librairie prête');
         });
     </script>
-    <!-- ... le contenu de ta page ... -->
-
     <!-- Inclusion du SDK Supabase via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- Ton bloc de télémétrie modulaire -->
-    <script src="telemetry.js"></script>
-</body>
-</html>
 </body>
 </html>
