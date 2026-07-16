@@ -1,5 +1,3 @@
-# INDEX HTML V1 GITHUB
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -315,29 +313,6 @@
             return input.trim().replace(/\s+/g, ' ');
         }
 
-        async function logVisit(userRef, pageName) {
-            try {
-                console.log(`[LOG] Enregistrement de la visite: user_ref=${userRef}, page=${pageName}`);
-                
-                const { error } = await sbClient
-                    .from('logs_website')
-                    .insert([
-                        {
-                            user_id: userRef,
-                            page: pageName
-                        }
-                    ]);
-
-                if (error) {
-                    console.error('[LOG ERROR]', error);
-                } else {
-                    console.log(`[LOG] Visite enregistrée avec succès pour ${userRef} sur ${pageName}`);
-                }
-            } catch (err) {
-                console.error('[LOG FATAL]', err);
-            }
-        }
-
         async function searchMemberInMembres(PRENOM, NOM) {
             hideMessage();
 
@@ -392,7 +367,6 @@
                 console.log(`[RECHERCHE] Résultats members_website:`, websiteData);
 
                 if (memberData && memberData.length > 0) {
-                    await logVisit(memberData[0].REF, 'login_page');
                     return memberData;
                 }
 
