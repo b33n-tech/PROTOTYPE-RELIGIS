@@ -849,21 +849,29 @@
             }
         }
 
-        // Fonction pour rafraîchir les données depuis Supabase
         async function refreshContentData() {
+            // Sécurité : Vérifier que le client global existe avant de tenter quoi que ce soit
+            if (!window.sbClient) {
+                console.warn('[REFRESH] Impossible de rafraîchir : window.sbClient non trouvé.');
+                return false;
+            }
+
             const previousContent = { ...wikiContentCache };
+            // loadWikiContentFromSupabase() utilisera désormais window.sbClient à l'intérieur
             const newContent = await loadWikiContentFromSupabase();
 
             for (const cacheKey in newContent) {
                 if (!previousContent[cacheKey] || 
                     previousContent[cacheKey].content !== newContent[cacheKey].content) {
                     console.log('[REFRESH] Contenu modifié détecté:', cacheKey);
-                    
+            
                     if (currentPage && currentPage.nom_fichier === newContent[cacheKey].nom_fichier) {
                         currentPage = newContent[cacheKey];
                         renderContent();
                     }
-                    
+            
+            // Pas besoin d'await ici car reinitializePages est asynchrone 
+            // mais n'a pas besoin d'être attendu pour la logique de rafraîchissement
                     reinitializePages();
                     return true;
                 }
