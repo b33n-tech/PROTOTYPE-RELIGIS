@@ -7,12 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="telemetry.js"></script>
     
-    <script>
-      window.addEventListener('load', async () => {
-        // Remplacer 'frazer' par le nom correspondant à cette page
-        await trackCurrentPage('frazer'); 
-      });
-    </script>
+
     
     <style>
         * {
@@ -634,6 +629,11 @@
             const displayName = nom ? `${prenom} ${nom}` : prenom;
             document.getElementById('userDisplay').textContent = displayName + (isGuest ? ' (invité)' : '');
         });
+            if (typeof trackCurrentPage === 'function') {
+            await trackCurrentPage('frazer');
+        }
+        // --------------------------------
+    });
 
         // Handle QR image loading
         function handleQRImage() {
