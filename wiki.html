@@ -736,8 +736,10 @@
         // Fonction d'initialisation Supabase
         function initSupabaseClient() {
             try {
-                sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('[SUPABASE] Client initialisé');
+        // MODIFICATION ICI : on attache le client à 'window'
+                window.sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+                console.log('[SUPABASE] Client initialisé et rendu global');
                 return true;
             } catch (error) {
                 console.error('[SUPABASE] Erreur initialisation:', error);
