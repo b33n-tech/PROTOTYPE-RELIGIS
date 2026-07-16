@@ -1,9 +1,11 @@
+# INDEX HTML V1 GITHUB
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReligiS - Librairie</title>
+    <title>ReligiS - Connexion</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -14,393 +16,114 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #f5f7fa;
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 40px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            min-height: 100vh;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-        }
-
-        .header h1 {
-            font-size: 24px;
-            font-weight: 600;
-        }
-
-        .header-right {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .user-info {
-            font-size: 13px;
-            opacity: 0.9;
-        }
-
-        .btn-logout {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 13px;
-        }
-
-        .btn-logout:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .container {
-            display: flex;
-            height: calc(100vh - 70px);
-        }
-
-        /* SIDEBAR - 1/3 */
-        .sidebar {
-            width: 33.33%;
-            background: white;
-            border-right: 1px solid #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .sidebar-header {
+            justify-content: center;
             padding: 20px;
-            border-bottom: 1px solid #e2e8f0;
-            background: #f9f9f9;
         }
 
-        .sidebar-header h2 {
-            font-size: 16px;
+        .login-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
             color: #333;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             font-weight: 600;
         }
 
-        .search-box {
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input[type="text"] {
             width: 100%;
-            padding: 10px 12px;
+            padding: 12px;
             border: 1px solid #ddd;
             border-radius: 8px;
-            font-size: 13px;
-            transition: border-color 0.2s;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        .search-box:focus {
+        input[type="text"]:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .filter-group {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding-bottom: 8px;
-            scroll-behavior: smooth;
-        }
-
-        .filter-group::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .filter-group::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .filter-group::-webkit-scrollbar-thumb {
-            background: #ddd;
-            border-radius: 2px;
-        }
-
-        .filter-group::-webkit-scrollbar-thumb:hover {
-            background: #bbb;
-        }
-
-        .filter-btn {
-            padding: 6px 12px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #666;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .filter-btn.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .filter-btn:hover {
-            border-color: #667eea;
-        }
-
-        .content-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0;
-        }
-
-        .content-item {
-            padding: 16px 20px;
-            border-bottom: 1px solid #e2e8f0;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: white;
-        }
-
-        .content-item:hover {
-            background: #f8f9fa;
-            border-left: 3px solid #667eea;
-            padding-left: 17px;
-        }
-
-        .content-item.active {
-            background: #f0f0ff;
-            border-left: 3px solid #667eea;
-            padding-left: 17px;
-        }
-
-        .content-item-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 6px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .content-item-meta {
-            font-size: 12px;
-            color: #999;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .content-item-meta span {
-            display: inline-block;
-        }
-
-        .loading-sidebar {
-            padding: 40px 20px;
-            text-align: center;
-            color: #999;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f0f0f0;
-            border-top-color: #667eea;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-bottom: 10px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* MAIN CONTENT - 2/3 */
-        .main-content {
-            flex: 1;
-            background: white;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .preview-empty {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: #999;
-        }
-
-        .preview-empty svg {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-
-        .preview-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .preview-image {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .preview-title {
-            font-size: 22px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 6px;
-        }
-
-        .preview-source {
-            font-size: 12px;
-            color: #999;
-            margin-bottom: 15px;
-        }
-
-        .preview-meta-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 18px;
-            align-items: start;
-        }
-
-        .meta-item {
-            background: #f9f9f9;
-            padding: 12px;
-            border-radius: 8px;
-            border-left: 3px solid #667eea;
-        }
-
-        .meta-image {
-            background: #f9f9f9;
-            padding: 12px;
-            border-radius: 8px;
-            border-left: 3px solid #667eea;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 120px;
-        }
-
-        .meta-image img {
-            max-width: 100%;
-            max-height: 120px;
-            object-fit: contain;
-        }
-
-        .meta-label {
-            font-size: 10px;
-            font-weight: 600;
-            color: #999;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-
-        .meta-value {
-            font-size: 12px;
-            color: #333;
-            font-weight: 500;
-        }
-
-        .meta-value.date {
-            font-size: 11px;
-            color: #666;
-        }
-
-        .type-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            background: #667eea;
-            color: white;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-right: 5px;
-            margin-bottom: 5px;
-        }
-
-        .action-buttons {
+        .button-group {
             display: flex;
             gap: 10px;
-            margin-top: 15px;
+            margin-top: 30px;
         }
 
         button {
-            padding: 10px 18px;
+            flex: 1;
+            padding: 12px;
             border: none;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .btn-primary {
+        .btn-login {
             background: #667eea;
             color: white;
-            flex: 1;
         }
 
-        .btn-primary:hover {
+        .btn-login:hover {
             background: #5568d3;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
 
-        .btn-primary:active {
+        .btn-login:active {
             transform: translateY(0);
         }
 
-        .btn-secondary {
+        .btn-guest {
             background: #f0f0f0;
             color: #333;
             border: 1px solid #ddd;
-            flex: 1;
         }
 
-        .btn-secondary:hover {
+        .btn-guest:hover {
             background: #e8e8e8;
         }
 
-        .btn-download {
-            background: #48bb78;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-download:hover {
-            background: #38a169;
-        }
-
         .message {
-            padding: 12px 20px;
+            margin-top: 20px;
+            padding: 12px;
             border-radius: 8px;
             font-size: 13px;
-            margin-bottom: 20px;
             display: none;
             animation: slideIn 0.3s ease;
         }
@@ -422,146 +145,124 @@
             border: 1px solid #fcc;
         }
 
-        .message.success {
-            background: #efe;
-            color: #3c3;
-            border: 1px solid #cfc;
-        }
-
         .message.info {
             background: #eef;
             color: #33c;
             border: 1px solid #ccf;
         }
 
-        /* RESPONSIVE */
-        @media (max-width: 1024px) {
-            .preview-meta-grid {
-                grid-template-columns: 1fr;
-            }
+        .message.success {
+            background: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
         }
 
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-                height: auto;
-            }
-
-            .sidebar {
-                width: 100%;
-                max-height: 300px;
-                border-right: none;
-                border-bottom: 1px solid #e2e8f0;
-            }
-
-            .main-content {
-                width: 100%;
-            }
-
-            .header {
-                flex-direction: column;
-                gap: 15px;
-            }
-        }
-
-        .content-item::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .content-item::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .content-item::-webkit-scrollbar-thumb {
-            background: #ddd;
-            border-radius: 3px;
-        }
-
-        .content-item::-webkit-scrollbar-thumb:hover {
-            background: #ccc;
-        }
-
-        .no-results {
-            padding: 40px 20px;
-            text-align: center;
-            color: #999;
-        }
-
-        .loading-indicator {
+        .loading {
             display: none;
             text-align: center;
-            padding: 40px 20px;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .register-prompt {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .register-prompt p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .register-prompt button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        .register-prompt button:last-child {
+            margin-bottom: 0;
+        }
+
+        .btn-register {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-register:hover {
+            background: #38a169;
+        }
+
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #333;
+        }
+
+        .btn-cancel:hover {
+            background: #cbd5e0;
         }
     </style>
 </head>
 <body>
-    <!-- HEADER -->
-    <div class="header">
-        <h1>📚 ReligiS - Librairie</h1>
-        <div class="header-right">
-            <div class="user-info">
-                <span id="userDisplay">Invité</span>
-            </div>
-            <button class="btn-logout" id="btnHome">🏠 Accueil</button>
-            <button class="btn-logout" id="btnLogout">Déconnexion</button>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>ReligiS</h1>
+            <p>Plateforme collaborative</p>
         </div>
-    </div>
 
-    <!-- LAYOUT PRINCIPAL -->
-    <div class="container">
-        <!-- SIDEBAR - 1/3 -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2>Contenus</h2>
-                <input type="text" class="search-box" id="searchBox" placeholder="Rechercher un sujet...">
-                <div class="filter-group">
-                    <button class="filter-btn active" data-filter="ALL">Tous</button>
-                    <button class="filter-btn" data-filter="DOC">documents</button>
-                    <button class="filter-btn" data-filter="DATABASE">données</button>
-                    <button class="filter-btn" data-filter="MULTIMEDIA">multimedia</button>
-                    <button class="filter-btn" data-filter="PAGE WEB">web</button>
-                </div>
+        <div id="loginForm" class="login-form">
+            <div class="form-group">
+                <label for="PRENOM">Prénom</label>
+                <input type="text" id="PRENOM" placeholder="Votre prénom" autocomplete="given-name">
+            </div>
+
+            <div class="form-group">
+                <label for="NOM">NOM</label>
+                <input type="text" id="NOM" placeholder="Votre nom" autocomplete="family-name">
+            </div>
+
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px; color: #999; font-size: 13px;">Vérification en cours...</p>
             </div>
 
             <div class="message" id="messageBox"></div>
 
-            <div id="contentList" class="content-list">
-                <div class="loading-sidebar">
-                    <div class="spinner"></div>
-                    <p style="margin-top: 10px; font-size: 13px;">Chargement des contenus...</p>
-                </div>
+            <div class="button-group">
+                <button class="btn-login" id="btnLogin">Se connecter</button>
+                <button class="btn-guest" id="btnGuest">Continuer en invité</button>
             </div>
-        </div>
 
-        <!-- MAIN CONTENT - 2/3 -->
-        <div class="main-content">
-            <div id="previewContainer" class="preview-empty">
-                <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    <p>Sélectionnez un contenu pour afficher les détails</p>
-                </div>
+            <div class="register-prompt" id="registerPrompt">
+                <p>Vous n'êtes pas encore enregistré. Souhaitez-vous vous inscrire ?</p>
+                <button class="btn-register" id="btnRegister">Oui, m'inscrire</button>
+                <button class="btn-cancel" id="btnCancelRegister">Non, continuer en invité</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ===========================
-        // CONFIGURATION SUPABASE
-        // ===========================
         const SUPABASE_URL = 'https://rkxaprpcetborlslblqj.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NpdAjISRkvlmuO6cY3xljA_79dxiqkZ';
 
-
-        // ===========================
-        // INITIALISATION CLIENT ET ÉTAT
-        // ===========================
         let sbClient = null;
-        let allContents = [];
-        let filteredContents = [];
-        let selectedContent = null;
-        let currentFilter = 'ALL';
 
         function initSupabaseClient() {
             try {
@@ -575,364 +276,314 @@
             }
         }
 
-        // ===========================
-        // UTILITY FUNCTIONS
-        // ===========================
         function showMessage(text, type = 'info') {
             const messageBox = document.getElementById('messageBox');
             messageBox.textContent = text;
             messageBox.className = `message ${type}`;
             messageBox.style.display = 'block';
-
-            if (type !== 'error') {
-                setTimeout(() => {
-                    messageBox.style.display = 'none';
-                }, 3000);
-            }
         }
 
-        function formatDate(dateString) {
-            // Si la date est nulle, undefined ou vide, on retourne un texte par défaut
-            if (!dateString) {
-                return "Date inconnue";
-            }
-
-            const date = new Date(dateString);
-
-            // Vérifie si la date est valide (le "is finite" de l'erreur)
-            if (isNaN(date.getTime())) {
-                return "Date invalide";
-            }
-
-            // Retourne le format souhaité (adaptez selon vos besoins)
-            return date.toLocaleDateString('fr-FR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
+        function hideMessage() {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.style.display = 'none';
         }
 
-        function getImageForType(type1) {
-            const typeMap = {
-                'DATABASE': './img/lib/table.png',
-                'DOC': './img/lib/texte.png',
-                'MULTIMEDIA': './img/lib/video.jpg',
-                'PAGE WEB': './img/lib/website.jpg'
-            };
-            return typeMap[type1] || '';
+        function showLoading(show = true) {
+            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
         }
 
-        function loadUserSession() {
-            const PRENOM = sessionStorage.getItem('user_PRENOM') || 'Invité';
-            const NOM = sessionStorage.getItem('user_NOM') || '';
-            const isGuest = sessionStorage.getItem('user_is_guest') === 'true';
-            
-            const displayName = isGuest ? `${PRENOM} ${NOM} (Invité)` : `${PRENOM} ${NOM}`;
-            document.getElementById('userDisplay').textContent = displayName;
+        function setFormEnabled(enabled) {
+            document.getElementById('PRENOM').disabled = !enabled;
+            document.getElementById('NOM').disabled = !enabled;
+            document.getElementById('btnLogin').disabled = !enabled;
+            document.getElementById('btnGuest').disabled = !enabled;
         }
 
-        // ===========================
-        // FONCTION DE LOGGING
-        // ===========================
+        function storeUserSession(PRENOM, NOM, isGuest = false, userRef = null) {
+            sessionStorage.setItem('user_PRENOM', PRENOM);
+            sessionStorage.setItem('user_NOM', NOM);
+            sessionStorage.setItem('user_is_guest', isGuest);
+            sessionStorage.setItem('user_ref', userRef);
+            sessionStorage.setItem('session_start', new Date().toISOString());
+        }
+
+        function redirectToDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        function sanitizeInput(input) {
+            return input.trim().replace(/\s+/g, ' ');
+        }
+
         async function logVisit(userRef, pageName) {
             try {
-                const userRefValue = userRef || sessionStorage.getItem('user_ref');
-                if (!userRefValue || userRefValue === 'null') {
-                    console.log('[LOG] Accès invité - pas de logging');
-                    return;
-                }
-
-                console.log(`[LOG] Enregistrement visite: user_ref=${userRefValue}, page=${pageName}`);
-
+                console.log(`[LOG] Enregistrement de la visite: user_ref=${userRef}, page=${pageName}`);
+                
                 const { error } = await sbClient
                     .from('logs_website')
-                    .insert([{ user_id: userRefValue, page: pageName }]);
+                    .insert([
+                        {
+                            user_id: userRef,
+                            page: pageName
+                        }
+                    ]);
 
                 if (error) {
                     console.error('[LOG ERROR]', error);
                 } else {
-                    console.log(`[LOG] Visite enregistrée avec succès`);
+                    console.log(`[LOG] Visite enregistrée avec succès pour ${userRef} sur ${pageName}`);
                 }
             } catch (err) {
                 console.error('[LOG FATAL]', err);
             }
         }
 
-        // ===========================
-        // LOGIQUE MÉTIER : Charger les contenus
-        // ===========================
-        async function loadContents() {
+        async function searchMemberInMembres(PRENOM, NOM) {
+            hideMessage();
+
+            if (!PRENOM.trim() || !NOM.trim()) {
+                showMessage('Veuillez remplir tous les champs.', 'error');
+                return null;
+            }
+
+            const PRENOMClean = sanitizeInput(PRENOM);
+            const NOMClean = sanitizeInput(NOM);
+
+            console.log(`[RECHERCHE] Entrées brutes: PRENOM="${PRENOM}", NOM="${NOM}"`);
+            console.log(`[RECHERCHE] Entrées nettoyées: PRENOM="${PRENOMClean}", NOM="${NOMClean}"`);
+
+            showLoading(true);
+            setFormEnabled(false);
+
             try {
-                console.log('[CONTENUS] Chargement des contenus de Supabase');
+                console.log(`[RECHERCHE] Recherche simultanée dans MEMBRES et members_website`);
+
+                const { data: memberData, error: memberError } = await sbClient
+                    .from('MEMBRES')
+                    .select('REF, PRENOM, NOM')
+                    .ilike('PRENOM', `%${PRENOMClean}%`)
+                    .ilike('NOM', `%${NOMClean}%`)
+                    .limit(1);
+
+                if (memberError) {
+                    console.error('[SUPABASE ERROR] Erreur lors de la recherche dans MEMBRES:', memberError);
+                    if (memberError.code === '401' || memberError.code === '403') {
+                        showMessage('Accès refusé au tableau MEMBRES. Vérifiez les permissions RLS.', 'error');
+                    } else {
+                        showMessage('Erreur lors de la vérification. Veuillez réessayer.', 'error');
+                    }
+                    return null;
+                }
+
+                const { data: websiteData, error: websiteError } = await sbClient
+                    .from('members_website')
+                    .select('id, prenom, nom')
+                    .ilike('prenom', `%${PRENOMClean}%`)
+                    .ilike('nom', `%${NOMClean}%`)
+                    .limit(1);
+
+                if (websiteError) {
+                    console.error('[SUPABASE ERROR] Erreur lors de la recherche dans members_website:', websiteError);
+                    showMessage('Erreur lors de la vérification. Veuillez réessayer.', 'error');
+                    return null;
+                }
+
+                console.log(`[RECHERCHE] Résultats MEMBRES:`, memberData);
+                console.log(`[RECHERCHE] Résultats members_website:`, websiteData);
+
+                if (memberData && memberData.length > 0) {
+                    await logVisit(memberData[0].REF, 'login_page');
+                    return memberData;
+                }
+
+                if (websiteData && websiteData.length > 0) {
+                    return websiteData.map(item => ({
+                        REF: item.id,
+                        PRENOM: item.prenom,
+                        NOM: item.nom
+                    }));
+                }
+                
+                return [];
+
+            } catch (err) {
+                console.error('[ERREUR FATALE] Exception non gérée:', err);
+                showMessage('Une erreur inattendue est survenue.', 'error');
+                return null;
+            } finally {
+                showLoading(false);
+                setFormEnabled(true);
+            }
+        }
+
+        async function addToMembersWebsite(PRENOM, NOM) {
+            const PRENOMClean = sanitizeInput(PRENOM);
+            const NOMClean = sanitizeInput(NOM);
+
+            try {
+                console.log(`[TRACKING] Ajout à members_website: ${PRENOMClean} ${NOMClean}`);
 
                 const { data, error } = await sbClient
-                    .from('CONTENUS')
-                    .select('REF, SUJET, URL, TYPE, TYPE1, TYPE2, DATE_PUBLICATION, DATE_COLLECTE, SOURCE')
-                    .order('DATE_COLLECTE', { ascending: false });
+                    .from('members_website')
+                    .insert([
+                        {
+                            prenom: PRENOMClean,
+                            nom: NOMClean
+                        }
+                    ])
+                    .select();
 
                 if (error) {
-                    console.error('[SUPABASE ERROR]', error);
-                    showMessage('Erreur lors du chargement des contenus.', 'error');
+                    console.error('[SUPABASE ERROR] Erreur lors de l\'ajout à members_website:', error);
+                    console.warn('[TRACKING] L\'ajout au tracking a échoué, mais l\'authentification continue');
                     return false;
                 }
 
-                console.log(`[CONTENUS] ${data.length} contenus chargés`);
-                allContents = data || [];
-                filteredContents = allContents;
-
-                renderContentList();
-                logVisit(null, 'library_page');
-
+                console.log('[TRACKING] Succès:', data);
                 return true;
 
             } catch (err) {
-                console.error('[ERREUR FATALE]', err);
-                showMessage('Une erreur inattendue est survenue.', 'error');
+                console.error('[ERREUR FATALE] Exception lors du tracking:', err);
+                console.warn('[TRACKING] L\'ajout au tracking a échoué, mais l\'authentification continue');
                 return false;
             }
         }
 
-        // ===========================
-        // LOGIQUE MÉTIER : Filtrer et afficher les contenus
-        // ===========================
-        function applyFilters() {
-            let filtered = allContents;
+        async function registerMember(PRENOM, NOM) {
+            const PRENOMClean = sanitizeInput(PRENOM);
+            const NOMClean = sanitizeInput(NOM);
 
-            // Filtre par type
-            if (currentFilter !== 'ALL') {
-                filtered = filtered.filter(item => {
-                    return item.TYPE1 === currentFilter || item.TYPE2 === currentFilter;
-                });
-            }
+            showLoading(true);
+            setFormEnabled(false);
+            hideMessage();
 
-            // Filtre par recherche
-            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
-            if (searchTerm) {
-                filtered = filtered.filter(item => {
-                    return item.SUJET.toLowerCase().includes(searchTerm) ||
-                           item.SOURCE.toLowerCase().includes(searchTerm);
-                });
-            }
-
-            filteredContents = filtered;
-            renderContentList();
-        }
-
-        function renderContentList() {
-            const contentList = document.getElementById('contentList');
-
-            if (filteredContents.length === 0) {
-                contentList.innerHTML = '<div class="no-results"><p>Aucun contenu trouvé</p></div>';
-                return;
-            }
-
-            contentList.innerHTML = filteredContents.map(content => `
-                <div class="content-item ${selectedContent?.REF === content.REF ? 'active' : ''}" 
-                     data-ref="${content.REF}">
-                    <div class="content-item-title">${content.SUJET}</div>
-                    <div class="content-item-meta">
-                        <span>${content.SOURCE}</span>
-                        <span>•</span>
-                        <span>${formatDate(content.DATE_COLLECTE)}</span>
-                    </div>
-                </div>
-            `).join('');
-
-            // Ajouter les event listeners
-            contentList.querySelectorAll('.content-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const ref = item.getAttribute('data-ref');
-                    selectContent(ref);
-                });
-            });
-        }
-
-        // ===========================
-        // LOGIQUE MÉTIER : Sélectionner et afficher un contenu
-        // ===========================
-        function selectContent(ref) {
-            selectedContent = allContents.find(c => c.REF === ref);
-            
-            if (!selectedContent) return;
-
-            console.log('[SELECTION] Contenu sélectionné:', selectedContent.REF);
-
-            // Mettre à jour le sidebar
-            renderContentList();
-
-            // Mettre à jour le preview
-            renderPreview();
-        }
-
-        function renderPreview() {
-            if (!selectedContent) return;
-
-            const previewContainer = document.getElementById('previewContainer');
-
-            const typesList = [selectedContent.TYPE1, selectedContent.TYPE2]
-                .filter(Boolean)
-                .map(t => `<span class="type-badge">${t}</span>`)
-                .join('');
-
-            const imageUrl = getImageForType(selectedContent.TYPE1);
-            const imageHtml = imageUrl ? `<img src="${imageUrl}" alt="${selectedContent.TYPE1}">` : '';
-
-            const html = `
-                <div class="preview-container">
-                    <div class="message" id="previewMessage"></div>
-
-                    <div class="preview-header">
-                        <h1 class="preview-title">${selectedContent.SUJET}</h1>
-                        <p class="preview-source">📌 Source: <strong>${selectedContent.SOURCE}</strong></p>
-                    </div>
-
-                    <div class="preview-meta-grid">
-                        <div>
-                            <div class="meta-item">
-                                <div class="meta-label">Type de contenu</div>
-                                <div class="meta-value">${typesList}</div>
-                            </div>
-                            <div class="meta-item" style="margin-top: 12px;">
-                                <div class="meta-label">Date de publication</div>
-                                <div class="meta-value date">${formatDate(selectedContent.DATE_PUBLICATION)}</div>
-                            </div>
-                        </div>
-                        <div class="meta-image">
-                            ${imageHtml}
-                        </div>
-                    </div>
-
-                    <div class="action-buttons">
-                        <button class="btn-primary" id="btnOpenResource">
-                            ➜ Aller à la ressource
-                        </button>
-                        <button class="btn-secondary" id="btnCopyLink">
-                            📋 Copier le lien
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            previewContainer.innerHTML = html;
-
-            // Event listeners pour les boutons
-            document.getElementById('btnOpenResource').addEventListener('click', () => {
-                if (selectedContent.URL) {
-                    window.open(selectedContent.URL, '_blank');
-                    logVisit(null, `content_opened_${selectedContent.REF}`);
-                }
-            });
-
-            document.getElementById('btnCopyLink').addEventListener('click', () => {
-                const messageBox = document.getElementById('previewMessage');
-                navigator.clipboard.writeText(selectedContent.URL).then(() => {
-                    messageBox.textContent = '✓ Lien copié !';
-                    messageBox.className = 'message success';
-                    messageBox.style.display = 'block';
-                    setTimeout(() => {
-                        messageBox.style.display = 'none';
-                    }, 2000);
-                });
-            });
-        }
-
-        // ===========================
-        // LOGIQUE MÉTIER : Télécharger en CSV
-        // ===========================
-        function downloadAsCSV() {
             try {
-                console.log('[EXPORT] Téléchargement des contenus en CSV');
+                console.log(`[ENREGISTREMENT] Enregistrement de: ${PRENOMClean} ${NOMClean}`);
 
-                const headers = ['REF', 'SUJET', 'SOURCE', 'TYPE', 'TYPE1', 'TYPE2', 'DATE_PUBLICATION', 'DATE_COLLECTE', 'URL'];
-                
-                const csvData = [
-                    headers.join(','),
-                    ...filteredContents.map(item =>
-                        [
-                            item.REF,
-                            `"${(item.SUJET || '').replace(/"/g, '""')}"`,
-                            `"${(item.SOURCE || '').replace(/"/g, '""')}"`,
-                            item.TYPE || '',
-                            item.TYPE1 || '',
-                            item.TYPE2 || '',
-                            item.DATE_PUBLICATION || '',
-                            item.DATE_COLLECTE || '',
-                            item.URL || ''
-                        ].join(',')
-                    )
-                ].join('\n');
+                const { data: memberInserted, error: memberError } = await sbClient
+                    .from('members_website')
+                    .insert([
+                        {
+                            prenom: PRENOMClean,
+                            nom: NOMClean
+                        }
+                    ])
+                    .select();
 
-                const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                
-                link.setAttribute('href', url);
-                link.setAttribute('download', `ReligiS_Contenus_${new Date().toISOString().slice(0, 10)}.csv`);
-                link.style.visibility = 'hidden';
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                if (memberError) {
+                    console.error('[SUPABASE ERROR] Erreur lors de l\'insertion dans members_website:', memberError);
+                    if (memberError.code === '23505') {
+                        showMessage('Cet utilisateur est déjà enregistré.', 'info');
+                    } else {
+                        showMessage('Erreur lors de l\'enregistrement. Veuillez réessayer.', 'error');
+                    }
+                    return false;
+                }
 
-                showMessage('✓ Export CSV téléchargé avec succès', 'success');
+                console.log('[ENREGISTREMENT] Ajout à members_website réussi:', memberInserted);
+
+                storeUserSession(PRENOMClean, NOMClean, false, null);
+                showMessage('Bienvenue ! Redirection en cours...', 'success');
+                
+                setTimeout(() => {
+                    redirectToDashboard();
+                }, 1500);
+
+                return true;
 
             } catch (err) {
-                console.error('[EXPORT ERROR]', err);
-                showMessage('Erreur lors de l\'export.', 'error');
+                console.error('[ERREUR FATALE] Exception lors de l\'enregistrement:', err);
+                showMessage('Une erreur inattendue est survenue.', 'error');
+                return false;
+            } finally {
+                showLoading(false);
+                setFormEnabled(true);
             }
         }
 
-        // ===========================
-        // GESTIONNAIRES D'ÉVÉNEMENTS
-        // ===========================
-        document.getElementById('searchBox').addEventListener('input', () => {
-            applyFilters();
-        });
+        document.getElementById('btnLogin').addEventListener('click', async () => {
+            const PRENOM = document.getElementById('PRENOM').value;
+            const NOM = document.getElementById('NOM').value;
 
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = btn.getAttribute('data-filter');
-                applyFilters();
-            });
-        });
+            const members = await searchMemberInMembres(PRENOM, NOM);
 
-        document.getElementById('btnHome').addEventListener('click', () => {
-            window.location.href = 'dashboard.html';
-        });
-
-        document.getElementById('btnLogout').addEventListener('click', () => {
-            sessionStorage.clear();
-            window.location.href = 'index.html';
-        });
-
-        // ===========================
-        // INITIALISATION À LA CHARGE
-        // ===========================
-        window.addEventListener('DOMContentLoaded', async () => {
-            console.log('[INIT] Initialisation de la page Librairie');
-
-            loadUserSession();
-
-            if (!initSupabaseClient()) {
-                showMessage('Configuration Supabase incomplète.', 'error');
+            if (members === null) {
                 return;
             }
 
-            await loadContents();
+            if (members.length > 0) {
+                console.log('[AUTHENTIFICATION] Membre trouvé, connexion autorisée');
+                const memberRef = members[0].REF;
+                
+                const PRENOMClean = sanitizeInput(PRENOM);
+                const NOMClean = sanitizeInput(NOM);
+                await addToMembersWebsite(PRENOMClean, NOMClean);
+                
+                storeUserSession(PRENOMClean, NOMClean, false, memberRef);
+                showMessage('Bienvenue ! Redirection en cours...', 'success');
+                setTimeout(() => {
+                    redirectToDashboard();
+                }, 1000);
+            } else {
+                console.log('[AUTHENTIFICATION] Membre non trouvé');
+                document.getElementById('registerPrompt').style.display = 'block';
+                showMessage('Utilisateur non reconnu. Voulez-vous vous enregistrer ?', 'info');
+            }
+        });
 
-            console.log('[INIT] Page Librairie prête');
+        document.getElementById('btnRegister').addEventListener('click', async () => {
+            const PRENOM = document.getElementById('PRENOM').value;
+            const NOM = document.getElementById('NOM').value;
+            document.getElementById('registerPrompt').style.display = 'none';
+
+            await registerMember(PRENOM, NOM);
+        });
+
+        document.getElementById('btnCancelRegister').addEventListener('click', () => {
+            document.getElementById('registerPrompt').style.display = 'none';
+            const PRENOM = document.getElementById('PRENOM').value;
+            const NOM = document.getElementById('NOM').value;
+            const PRENOMClean = sanitizeInput(PRENOM);
+            const NOMClean = sanitizeInput(NOM);
+            
+            storeUserSession(PRENOMClean, NOMClean, true, null);
+            showMessage('Connexion en mode invité. Redirection en cours...', 'success');
+            setTimeout(() => {
+                redirectToDashboard();
+            }, 1000);
+        });
+
+        document.getElementById('btnGuest').addEventListener('click', () => {
+            const PRENOM = document.getElementById('PRENOM').value || 'Invité';
+            const NOM = document.getElementById('NOM').value || '';
+            const PRENOMClean = sanitizeInput(PRENOM);
+            const NOMClean = sanitizeInput(NOM);
+            
+            storeUserSession(PRENOMClean, NOMClean, true, null);
+            showMessage('Connexion en mode invité. Redirection en cours...', 'success');
+            setTimeout(() => {
+                redirectToDashboard();
+            }, 1000);
+        });
+
+        document.getElementById('NOM').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('btnLogin').click();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('[INIT] Initialisation de la page de connexion');
+            
+            if (!initSupabaseClient()) {
+                showMessage('Configuration Supabase incomplète. Vérifiez vos clés d\'API.', 'error');
+                setFormEnabled(false);
+            } else {
+                console.log('[INIT] Page prête');
+            }
+
+            document.getElementById('PRENOM').focus();
         });
     </script>
-    <!-- ... le contenu de ta page ... -->
-
-    <!-- Inclusion du SDK Supabase via CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- Ton bloc de télémétrie modulaire -->
-    <script src="telemetry.js"></script>
-</body>
-</html>
 </body>
 </html>
