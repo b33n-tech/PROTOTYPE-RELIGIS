@@ -567,12 +567,13 @@
 
         function initSupabaseClient() {
             try {
-                sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('[SUPABASE] Client initialisé avec succès');
+        // MODIFICATION ICI : on attache le client à 'window'
+                window.sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+                console.log('[SUPABASE] Client initialisé et rendu global');
                 return true;
             } catch (error) {
-                console.error('[SUPABASE] Erreur lors de l\'initialisation du client:', error);
-                showMessage('Erreur de connexion au serveur. Vérifiez votre configuration Supabase.', 'error');
+                console.error('[SUPABASE] Erreur initialisation:', error);
                 return false;
             }
         }
