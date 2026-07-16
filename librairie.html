@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ReligiS - Librairie</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -546,6 +545,11 @@
         </div>
     </div>
 
+    <!-- Inclusion du SDK Supabase via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Ton bloc de télémétrie modulaire -->
+    <script src="telemetry.js"></script>
+
     <script>
         // ===========================
         // CONFIGURATION SUPABASE
@@ -847,10 +851,5 @@
             console.log('[INIT] Page Librairie prête');
         });
     </script>
-
-    <!-- Inclusion du SDK Supabase via CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Ton bloc de télémétrie modulaire -->
-    <script src="telemetry.js"></script>
 </body>
 </html>
