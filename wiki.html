@@ -10,8 +10,11 @@
     <script src="telemetry.js"></script>
 
     <script>
-    window.addEventListener('load', async () => {
-    await trackCurrentPage('wiki'); // Remplacer par le nom de la page
+    // On utilise DOMContentLoaded pour s'assurer que le script telemetry.js est bien disponible
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (typeof trackCurrentPage === 'function') {
+            await trackCurrentPage('wiki');
+        }
     });
     </script>
     
