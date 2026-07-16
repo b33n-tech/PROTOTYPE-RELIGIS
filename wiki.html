@@ -1040,7 +1040,6 @@
         }
 
         async function submitContribution() {
-            // Vérification de sécurité
             if (!sbClient) {
                 alert('Erreur : Connexion à la base de données non établie.');
                 return;
@@ -1196,30 +1195,35 @@
         }
 
         // ===========================
-        // PAGE LOAD - INITIALIZATION CASCADE
+        // PAGE LOAD - INITIALIZATION CASCADE (SÉQUENTIELLE)
         // ===========================
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('[INIT] Démarrage du wiki');
             
-            // ÉTAPE 1 : Instancier le client global en premier
+            // ÉTAPE 1 : Instancier le client Supabase EN PREMIER
             const isClientReady = initSupabaseClient();
             
-            if (isClientReady) {
-                // ÉTAPE 2 : Lancer les dépendances critiques (Télémétrie)
-                if (typeof trackCurrentPage === 'function') {
-                    await trackCurrentPage('wiki');
-                }
-                
-                // ÉTAPE 3 : Lancer la logique propre à la page
-                loadUserSession();
-                await initializePages();
-                setupSearchListener();
-                setupLogoutListener();
-                setupContributePanelListeners();
-                startPeriodicRefresh();
-            } else {
+            if (!isClientReady) {
                 console.error("L'application n'a pas pu démarrer : Supabase est indisponible.");
+                return;
             }
+
+            // ÉTAPE 2 : Après Supabase OK, lancer la télémétrie
+            if (typeof trackCurrentPage === 'function') {
+                try {
+                    await trackCurrentPage('wiki');
+                } catch (error) {
+                    console.error('[TELEMETRY] Erreur lors du tracking:', error);
+                }
+            }
+            
+            // ÉTAPE 3 : Lancer la logique propre à la page
+            loadUserSession();
+            await initializePages();
+            setupSearchListener();
+            setupLogoutListener();
+            setupContributePanelListeners();
+            startPeriodicRefresh();
         });
     </script>
 
