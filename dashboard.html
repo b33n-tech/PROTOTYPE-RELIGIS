@@ -7,11 +7,13 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="telemetry.js"></script>
 
+    <!-- ⚠️ SUPPRIMÉ : L'appel précoce à trackCurrentPage
     <script>
     window.addEventListener('load', async () => {
-    await trackCurrentPage('dashboard'); // Remplacer par le nom de la page
+    await trackCurrentPage('dashboard'); // ❌ S'exécutait trop tôt
     });
     </script>
+    -->
     
     <style>
         * {
@@ -587,6 +589,13 @@
             document.getElementById('userDisplay').textContent = displayName + (isGuest ? ' (invité)' : '');
             
             console.log('[SESSION] Utilisateur:', displayName, 'Guest:', isGuest);
+
+            // ✅ NOUVEAU : Lancer le tracking APRÈS avoir chargé la session
+            // Cela garantit que le member_id est disponible dans sessionStorage
+            if (typeof trackCurrentPage === 'function') {
+                console.log('[SESSION] Lancement du tracking télémétrie...');
+                trackCurrentPage('dashboard');
+            }
         }
 
         // ===========================
@@ -801,7 +810,5 @@
         });
     </script>
     <!-- ... le contenu de ta page ... -->
-</body>
-</html>
 </body>
 </html>
