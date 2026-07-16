@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReligiS - Wiki</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 0 40px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-left h1 {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        nav {
+            display: flex;
+            gap: 30px;
+        }
+
+        nav a {
+            color: #666;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        nav a:hover {
+            color: #667eea;
+            background: #f0f4ff;
+        }
+
+        nav a.active {
+            color: #667eea;
+        }
+
+        nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: #667eea;
+            border-radius: 50%;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-left: 20px;
+            border-left: 1px solid #e9ecef;
+        }
+
+        .user-badge {
+            background: #f0f4ff;
+            color: #667eea;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .logout-btn:hover {
+            color: #667eea;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        main {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-search {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .sidebar-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+
+        .sidebar-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sidebar-item:hover {
+            background: #f8f9fa;
+            color: #667eea;
+        }
+
+        .sidebar-item.active {
+            background: #f0f4ff;
+            color: #667eea;
+            border-left: 3px solid #667eea;
+            padding-left: 17px;
+        }
+
+        .sidebar-item-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: inherit;
+        }
+
+        .sidebar-item-meta {
+            font-size: 11px;
+            color: #999;
+            font-weight: 400;
+        }
+
+        .sidebar-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+        }
+
+        /* ===== CONTENT AREA ===== */
+        .content {
+            flex: 1;
+            background: white;
+            padding: 40px;
+            overflow-y: auto;
+            max-height: calc(100vh - 70px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            text-align: center;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .content-title-section {
+            flex: 1;
+        }
+
+        .content-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .content-meta {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .version-selector {
+            position: relative;
+        }
+
+        .version-button {
+            background: white;
+            border: 1px solid #e9ecef;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .version-button:hover {
+            border-color: #667eea;
+            color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .version-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            min-width: 140px;
+            display: none;
+            margin-top: 4px;
+        }
+
+        .version-dropdown.active {
+            display: block;
+        }
+
+        .version-option {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+            color: #666;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .version-option:last-child {
+            border-bottom: none;
+        }
+
+        .version-option:hover {
+            background: #f0f4ff;
+            color: #667eea;
+        }
+
+        .version-option.current {
+            background: #f0f4ff;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .content-body {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #555;
+        }
+
+        .content-body h1,
+        .content-body h2,
+        .content-body h3,
+        .content-body h4,
+        .content-body h5,
+        .content-body h6 {
+            margin-top: 25px;
+            margin-bottom: 12px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .content-body h1 { font-size: 24px; }
+        .content-body h2 { font-size: 20px; }
+        .content-body h3 { font-size: 16px; }
+
+        .content-body p {
+            margin-bottom: 15px;
+        }
+
+        .content-body ul,
+        .content-body ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .content-body li {
+            margin-bottom: 6px;
+        }
+
+        .content-body code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #d63384;
+        }
+
+        .content-body pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 15px;
+        }
+
+        .content-body pre code {
+            background: none;
+            padding: 0;
+            color: #333;
+        }
+
+        .content-body blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+            margin-left: 0;
+            margin-bottom: 15px;
+            color: #777;
+            font-style: italic;
+        }
+
+        .content-body a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .content-body a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        /* ===== CONTRIBUTION PANEL ===== */
+        .contribute-button {
+            background: white;
+            border: 1px solid #e9ecef;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .contribute-button:hover {
+            border-color: #667eea;
+            color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .contribute-panel {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            border-left: 1px solid #e9ecef;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+            z-index: 200;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .contribute-panel.active {
+            right: 0;
+        }
+
+        .contribute-panel-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .contribute-panel-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .contribute-panel-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.2s;
+        }
+
+        .contribute-panel-close:hover {
+            color: #333;
+        }
+
+        .contribute-panel-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .contribute-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .contribute-form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .contribute-textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 10px;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 13px;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        .contribute-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .contribute-textarea::placeholder {
+            color: #ccc;
+        }
+
+        .contribute-info {
+            font-size: 11px;
+            color: #999;
+            line-height: 1.5;
+        }
+
+        .contribute-buttons {
+            display: flex;
+            gap: 10px;
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+            margin-top: auto;
+        }
+
+        .contribute-cancel {
+            flex: 1;
+            background: white;
+            border: 1px solid #e9ecef;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .contribute-cancel:hover {
+            background: #f8f9fa;
+        }
+
+        .contribute-submit {
+            flex: 1;
+            background: #667eea;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .contribute-submit:hover {
+            background: #764ba2;
+        }
+
+        .contribute-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .contribute-success {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 300;
+            animation: slideIn 0.3s ease;
+        }
+
+        .contribute-success-icon {
+            color: #28a745;
+            font-size: 20px;
+            margin-right: 10px;
+        }
+
+        .contribute-success-text {
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            main {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: 300px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .content-header {
+                flex-direction: column;
+            }
+
+            header {
+                padding: 0 20px;
+                height: 60px;
+            }
+
+            .header-left h1 {
+                font-size: 20px;
+            }
+
+            nav {
+                gap: 15px;
+            }
+
+            nav a {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <h1>ReligiS</h1>
+        </div>
+        <div class="header-right">
+            <nav>
+                <a href="dashboard.html" class="nav-link">DASHBOARD</a>
+                <a href="frazer.html" class="nav-link">FRAZER</a>
+                <a href="librairie.html" class="nav-link">LIBRAIRIE</a>
+                <a href="wiki.html" class="nav-link active">WIKI</a>
+            </nav>
+            <div class="user-info">
+                <div class="user-badge">
+                    <span id="userDisplay">Invité</span>
+                </div>
+                <button class="logout-btn" id="logoutBtn" title="Se déconnecter">🚪</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="sidebar">
+            <div class="sidebar-search">
+                <input type="text" class="search-input" id="searchInput" placeholder="Rechercher...">
+            </div>
+            <div class="sidebar-list" id="sidebarList">
+                <!-- Items générés dynamiquement -->
+            </div>
+        </div>
+
+        <div class="content" id="content">
+            <div class="content-empty">
+                <div>
+                    <p>📖 Sélectionnez une fiche pour commencer</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Panneau de contribution -->
+    <div class="contribute-panel" id="contributePanel">
+        <div class="contribute-panel-header">
+            <h3>Contribuer à cette fiche</h3>
+            <button class="contribute-panel-close" id="contributePanelClose">✕</button>
+        </div>
+        <div class="contribute-panel-content">
+            <div class="contribute-form-group">
+                <label>Votre contribution</label>
+                <textarea class="contribute-textarea" id="contributeInput" placeholder="Décrivez les informations que vous souhaitez ajouter ou modifier..."></textarea>
+            </div>
+            <div class="contribute-info">
+                💡 Vos contributions nous aident à améliorer continuellement nos fiches. Nous les examinerons et les intégrerons dans les plus brefs délais.
+            </div>
+        </div>
+        <div class="contribute-buttons">
+            <button class="contribute-cancel" id="contributeCancelBtn">Annuler</button>
+            <button class="contribute-submit" id="contributeSubmitBtn">Contribuer</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration Supabase
+        const SUPABASE_URL = 'https://rkxaprpcetborlslblqj.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_NpdAjISRkvlmuO6cY3xljA_79dxiqkZ';
+        let sbClient = null;
+
+        // Fonction d'initialisation Supabase
+        function initSupabaseClient() {
+            try {
+                sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('[SUPABASE] Client initialisé');
+                return true;
+            } catch (error) {
+                console.error('[SUPABASE] Erreur initialisation:', error);
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+        // ===========================
+        // DATA & STATE
+        // ===========================
+        let allPages = [];
+        let filteredPages = [];
+        let currentPage = null;
+        let pagesByTitle = {};
+        let wikiContentCache = {};
+        let lastLoadTime = {};
+        const CACHE_CHECK_INTERVAL = 5000;
+
+        // Fonction pour extraire le texte de recherche
+        function extractSearchText(content) {
+            return content.toLowerCase();
+        }
+
+        // Fonction pour formater le numéro de version (1 -> v1, 10 -> v10)
+        function formatVersionNumber(versionNum) {
+            return 'v' + versionNum;
+        }
+
+        // ===========================
+        // LOAD DATA FROM SUPABASE
+        // ===========================
+        async function loadWikiContentFromSupabase() {
+            if (!sbClient) {
+                console.error('[SUPABASE] Client non initialisé');
+                return {};
+            }
+
+            try {
+                // Récupérer toutes les fiches de la table wikifiles
+                const { data, error } = await sbClient
+                    .from('wikifiles')
+                    .select('id, nom_fichier, titre, version, content')
+                    .order('titre', { ascending: true })
+                    .order('version', { ascending: false });
+
+                if (error) {
+                    console.error('[SUPABASE] Erreur lors du chargement:', error);
+                    return {};
+                }
+
+                const newCache = {};
+                data.forEach(row => {
+                    const cacheKey = `${row.titre}_v${row.version}`;
+                    newCache[cacheKey] = {
+                        id: row.id,
+                        nom_fichier: row.nom_fichier,
+                        titre: row.titre,
+                        version: row.version,
+                        content: row.content,
+                        searchText: extractSearchText(row.content + ' ' + row.titre),
+                        lastUpdated: Date.now()
+                    };
+                });
+
+                wikiContentCache = newCache;
+                lastLoadTime['all'] = Date.now();
+                console.log('[SUPABASE] ' + data.length + ' fiches chargées');
+                return newCache;
+
+            } catch (err) {
+                console.error('[SUPABASE] Exception:', err);
+                return {};
+            }
+        }
+
+        // Fonction pour grouper les versions et garder la plus récente
+        async function initializePages() {
+            const wikiContent = await loadWikiContentFromSupabase();
+            pagesByTitle = {};
+            allPages = [];
+
+            // Grouper par titre
+            const groupedByTitle = {};
+            for (const [cacheKey, data] of Object.entries(wikiContent)) {
+                const titre = data.titre;
+                if (!groupedByTitle[titre]) {
+                    groupedByTitle[titre] = [];
+                }
+                groupedByTitle[titre].push(data);
+            }
+
+            // Pour chaque titre, garder toutes les versions et marquer la plus récente
+            for (const [titre, versions] of Object.entries(groupedByTitle)) {
+                versions.sort((a, b) => b.version - a.version);
+                pagesByTitle[titre] = {
+                    latest: versions[0],
+                    allVersions: versions
+                };
+                allPages.push(versions[0]);
+            }
+
+            filteredPages = [...allPages];
+            renderSidebar();
+
+            if (allPages.length > 0) {
+                selectPage(allPages[0]);
+            }
+        }
+
+        // Fonction pour rafraîchir les données depuis Supabase
+        async function refreshContentData() {
+            const previousContent = { ...wikiContentCache };
+            const newContent = await loadWikiContentFromSupabase();
+
+            for (const cacheKey in newContent) {
+                if (!previousContent[cacheKey] || 
+                    previousContent[cacheKey].content !== newContent[cacheKey].content) {
+                    console.log('[REFRESH] Contenu modifié détecté:', cacheKey);
+                    
+                    if (currentPage && currentPage.nom_fichier === newContent[cacheKey].nom_fichier) {
+                        currentPage = newContent[cacheKey];
+                        renderContent();
+                    }
+                    
+                    reinitializePages();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Fonction pour réinitialiser les pages après une modification
+        async function reinitializePages() {
+            allPages = [];
+            filteredPages = [];
+            currentPage = null;
+            pagesByTitle = {};
+
+            await initializePages();
+        }
+
+        // Fonction pour accéder au contenu via cache
+        function getPageContent(cacheKey) {
+            return wikiContentCache[cacheKey] || null;
+        }
+
+        // ===========================
+        // INITIALIZATION
+        // ===========================
+        function loadUserSession() {
+            const prenom = sessionStorage.getItem('user_prenom') || 'Invité';
+            const nom = sessionStorage.getItem('user_nom') || '';
+            const isGuest = sessionStorage.getItem('user_is_guest') === 'true';
+            
+            const displayName = nom ? `${prenom} ${nom}` : prenom;
+            document.getElementById('userDisplay').textContent = displayName + (isGuest ? ' (invité)' : '');
+        }
+
+        // ===========================
+        // SIDEBAR RENDERING
+        // ===========================
+        function renderSidebar() {
+            const list = document.getElementById('sidebarList');
+            list.innerHTML = '';
+
+            if (filteredPages.length === 0) {
+                list.innerHTML = '<div class="sidebar-empty">Aucune fiche trouvée</div>';
+                return;
+            }
+
+            filteredPages.forEach(page => {
+                const item = document.createElement('div');
+                item.className = 'sidebar-item' + (currentPage?.titre === page.titre ? ' active' : '');
+                item.innerHTML = `
+                    <div class="sidebar-item-title">${page.titre}</div>
+                `;
+                item.addEventListener('click', () => selectPage(page));
+                list.appendChild(item);
+            });
+        }
+
+        function selectPage(page) {
+            const cacheKey = `${page.titre}_v${page.version}`;
+            const pageData = getPageContent(cacheKey);
+            if (pageData) {
+                currentPage = pageData;
+            } else {
+                currentPage = page;
+            }
+            renderContent();
+            renderSidebar();
+        }
+
+        // ===========================
+        // CONTENT RENDERING
+        // ===========================
+        function renderContent() {
+            const content = document.getElementById('content');
+
+            if (!currentPage) {
+                content.innerHTML = '<div class="content-empty"><div><p>📖 Sélectionnez une fiche pour commencer</p></div></div>';
+                return;
+            }
+
+            const htmlContent = marked.parse(currentPage.content);
+            const titre = currentPage.titre;
+            const allVersions = pagesByTitle[titre].allVersions;
+            
+            let versionSelector = '';
+            if (allVersions.length > 1) {
+                versionSelector = `
+                    <div class="version-selector">
+                        <button class="version-button" id="versionBtn">
+                            ${formatVersionNumber(currentPage.version)}
+                            <span>▼</span>
+                        </button>
+                        <div class="version-dropdown" id="versionDropdown">
+                            ${allVersions.map((v, index) => `
+                                <div class="version-option${v.nom_fichier === currentPage.nom_fichier ? ' current' : ''}" 
+                                     data-version-index="${index}" 
+                                     data-version-num="${v.version}">
+                                    ${formatVersionNumber(v.version)}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = `
+                <div class="content-header">
+                    <div class="content-title-section">
+                        <div class="content-title">${currentPage.titre}</div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        ${versionSelector}
+                        <button class="contribute-button" id="contributeBtn">
+                            ✏️ CONTRIBUER
+                        </button>
+                    </div>
+                </div>
+                <div class="content-body">${htmlContent}</div>
+            `;
+
+            // Event listeners pour le dropdown
+            if (allVersions.length > 1) {
+                const btn = document.getElementById('versionBtn');
+                const dropdown = document.getElementById('versionDropdown');
+                const versionOptions = document.querySelectorAll('.version-option');
+
+                // Ouverture/fermeture du dropdown
+                btn.addEventListener('click', () => {
+                    dropdown.classList.toggle('active');
+                });
+
+                // Fermer en cliquant ailleurs
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.version-selector')) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+
+                // Event listeners pour chaque option de version
+                versionOptions.forEach((option, index) => {
+                    option.addEventListener('click', () => {
+                        const selectedVersion = allVersions[index];
+                        const cacheKey = `${selectedVersion.titre}_v${selectedVersion.version}`;
+                        const pageData = getPageContent(cacheKey);
+                        
+                        if (pageData) {
+                            currentPage = pageData;
+                            renderContent();
+                        } else {
+                            currentPage = selectedVersion;
+                            renderContent();
+                        }
+                    });
+                });
+            }
+
+            // Event listener pour le bouton contribuer
+            const contributeBtn = document.getElementById('contributeBtn');
+            if (contributeBtn) {
+                contributeBtn.addEventListener('click', openContributePanel);
+            }
+        }
+
+        // ===========================
+        // CONTRIBUTION SYSTEM
+        // ===========================
+        function openContributePanel() {
+            document.getElementById('contributePanel').classList.add('active');
+            document.getElementById('contributeInput').focus();
+        }
+
+        function closeContributePanel() {
+            document.getElementById('contributePanel').classList.remove('active');
+            document.getElementById('contributeInput').value = '';
+        }
+
+        async function submitContribution() {
+            // Vérification de sécurité
+            if (!sbClient) {
+                alert('Erreur : Connexion à la base de données non établie.');
+                return;
+            }
+
+            const textarea = document.getElementById('contributeInput');
+            const text = textarea.value.trim();
+
+            if (!text) {
+                alert('Veuillez saisir un message.');
+                return;
+            }
+
+            if (!currentPage) {
+                alert('Erreur: aucune fiche sélectionnée');
+                return;
+            }
+
+            const submitBtn = document.getElementById('contributeSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Envoi en cours...';
+
+            try {
+                // Préparer les données
+                const contribution = {
+                    nom_fiche: currentPage.nom_fichier,
+                    input_user: text
+                };
+
+                // Envoyer à Supabase
+                const { data, error } = await sbClient
+                    .from('wiki_contribute')
+                    .insert([contribution]);
+
+                if (error) {
+                    console.error('[SUPABASE ERROR]', error);
+                    alert('Erreur lors de l\'envoi de votre contribution. Veuillez réessayer.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Contribuer';
+                    return;
+                }
+
+                // Fermer le panneau
+                closeContributePanel();
+
+                // Afficher le message de succès
+                showSuccessMessage();
+
+                console.log('[CONTRIBUTION] Envoyée avec succès:', contribution);
+
+            } catch (err) {
+                console.error('[ERREUR]', err);
+                alert('Une erreur est survenue. Veuillez réessayer.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Contribuer';
+            }
+        }
+
+        function showSuccessMessage() {
+            const message = document.createElement('div');
+            message.className = 'contribute-success';
+            message.innerHTML = `
+                <div style="display: flex; align-items: center;">
+                    <span class="contribute-success-icon">✓</span>
+                    <span class="contribute-success-text">Merci pour votre contribution ! Nous l'intégrerons dans les plus brefs délais.</span>
+                </div>
+            `;
+            document.body.appendChild(message);
+
+            setTimeout(() => {
+                message.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => {
+                    message.remove();
+                }, 300);
+            }, 5000);
+        }
+
+        // ===========================
+        // SEARCH
+        // ===========================
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+
+            if (!query) {
+                filteredPages = [...allPages];
+            } else {
+                filteredPages = allPages.filter(page => 
+                    page.titre.toLowerCase().includes(query) ||
+                    page.searchText.includes(query)
+                );
+            }
+
+            renderSidebar();
+        });
+
+        // ===========================
+        // LOGOUT
+        // ===========================
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            }
+        });
+
+        // ===========================
+        // PAGE LOAD
+        // ===========================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[INIT] Démarrage du wiki');
+            
+            // Initialiser Supabase en premier
+            initSupabaseClient();
+            
+            // Ensuite initialiser les autres fonctions
+            loadUserSession();
+            initializePages();
+
+            // Event listeners pour le panneau de contribution
+            const contributePanelCloseBtn = document.getElementById('contributePanelClose');
+            const contributeCancelBtn = document.getElementById('contributeCancelBtn');
+            const contributeSubmitBtn = document.getElementById('contributeSubmitBtn');
+
+            if (contributePanelCloseBtn) {
+                contributePanelCloseBtn.addEventListener('click', closeContributePanel);
+            }
+            if (contributeCancelBtn) {
+                contributeCancelBtn.addEventListener('click', closeContributePanel);
+            }
+            if (contributeSubmitBtn) {
+                contributeSubmitBtn.addEventListener('click', submitContribution);
+            }
+
+            // Fermer le panneau avec ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeContributePanel();
+                }
+            });
+
+            // Fermer le panneau en cliquant à l'extérieur
+            document.addEventListener('click', (e) => {
+                const panel = document.getElementById('contributePanel');
+                if (!e.target.closest('.contribute-panel') && !e.target.closest('#contributeBtn')) {
+                    if (panel && panel.classList.contains('active')) {
+                        closeContributePanel();
+                    }
+                }
+            });
+
+            // Rafraîchir les données périodiquement
+            setInterval(() => {
+                refreshContentData();
+            }, CACHE_CHECK_INTERVAL);
+        });
+    </script>
+</body>
+</html>

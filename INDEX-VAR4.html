@@ -1,0 +1,613 @@
+n<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReligiS - Connexion</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-login {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-login:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-guest {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-guest:hover {
+            background: #e8e8e8;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .message.info {
+            background: #eef;
+            color: #33c;
+            border: 1px solid #ccf;
+        }
+
+        .message.success {
+            background: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .register-prompt {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .register-prompt p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .register-prompt button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        .register-prompt button:last-child {
+            margin-bottom: 0;
+        }
+
+        .btn-register {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-register:hover {
+            background: #38a169;
+        }
+
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #333;
+        }
+
+        .btn-cancel:hover {
+            background: #cbd5e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>ReligiS</h1>
+            <p>Plateforme collaborative</p>
+        </div>
+
+        <div id="loginForm" class="login-form">
+            <div class="form-group">
+                <label for="PRENOM">Prénom</label>
+                <input type="text" id="PRENOM" placeholder="Votre prénom" autocomplete="given-name">
+            </div>
+
+            <div class="form-group">
+                <label for="NOM">NOM</label>
+                <input type="text" id="NOM" placeholder="Votre NOM" autocomplete="family-name">
+            </div>
+
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px; color: #999; font-size: 13px;">Vérification en cours...</p>
+            </div>
+
+            <div class="message" id="messageBox"></div>
+
+            <div class="button-group">
+                <button class="btn-login" id="btnLogin">Se connecter</button>
+                <button class="btn-guest" id="btnGuest">Continuer en invité</button>
+            </div>
+
+            <div class="register-prompt" id="registerPrompt">
+                <p>Vous n'êtes pas encore enregistré. Souhaitez-vous vous inscrire ?</p>
+                <button class="btn-register" id="btnRegister">Oui, m'inscrire</button>
+                <button class="btn-cancel" id="btnCancelRegister">Non, continuer en invité</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===========================
+        // CONFIGURATION SUPABASE
+        // ===========================
+        const SUPABASE_URL = 'https://rkxaprpcetborlslblqj.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_NpdAjISRkvlmuO6cY3xljA_79dxiqkZ';
+
+        // ===========================
+        // INITIALISATION CLIENT
+        // ===========================
+        let sbClient = null;
+
+        function initSupabaseClient() {
+            try {
+                sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('[SUPABASE] Client initialisé avec succès');
+                return true;
+            } catch (error) {
+                console.error('[SUPABASE] Erreur lors de l\'initialisation du client:', error);
+                showMessage('Erreur de connexion au serveur. Vérifiez votre configuration Supabase.', 'error');
+                return false;
+            }
+        }
+
+        // ===========================
+        // UTILITY FUNCTIONS
+        // ===========================
+        function showMessage(text, type = 'info') {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = text;
+            messageBox.className = `message ${type}`;
+            messageBox.style.display = 'block';
+        }
+
+        function hideMessage() {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.style.display = 'none';
+        }
+
+        function showLoading(show = true) {
+            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+        }
+
+        function setFormEnabled(enabled) {
+            document.getElementById('PRENOM').disabled = !enabled;
+            document.getElementById('NOM').disabled = !enabled;
+            document.getElementById('btnLogin').disabled = !enabled;
+            document.getElementById('btnGuest').disabled = !enabled;
+        }
+
+        function storeUserSession(PRENOM, NOM, isGuest = false, userRef = null) {
+            sessionStorage.setItem('user_PRENOM', PRENOM);
+            sessionStorage.setItem('user_NOM', NOM);
+            sessionStorage.setItem('user_is_guest', isGuest);
+            sessionStorage.setItem('user_ref', userRef);
+            sessionStorage.setItem('session_start', new Date().toISOString());
+        }
+
+        function redirectToDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Fonction de nettoyage des données
+        function sanitizeInput(input) {
+            return input.trim().replace(/\s+/g, ' ');
+        }
+
+        // ===========================
+        // FONCTION DE LOGGING - RÉUTILISABLE
+        // ===========================
+        async function logVisit(userRef, pageName) {
+            try {
+                // userRef correspond à la colonne 'REF' de MEMBRES
+                console.log(`[LOG] Enregistrement de la visite: user_ref=${userRef}, page=${pageName}`);
+                
+                const { error } = await sbClient
+                    .from('logs_website')
+                    .insert([
+                        {
+                            user_id: userRef,
+                            page: pageName
+                        }
+                    ]);
+
+                if (error) {
+                    console.error('[LOG ERROR]', error);
+                } else {
+                    console.log(`[LOG] Visite enregistrée avec succès pour ${userRef} sur ${pageName}`);
+                }
+            } catch (err) {
+                console.error('[LOG FATAL]', err);
+            }
+        }
+
+        // ===========================
+        // LOGIQUE MÉTIER : Recherche de membre dans MEMBRES
+        // ===========================
+        async function searchMemberInMembres(PRENOM, NOM) {
+            hideMessage();
+
+            // Validation basique
+            if (!PRENOM.trim() || !NOM.trim()) {
+                showMessage('Veuillez remplir tous les champs.', 'error');
+                return null;
+            }
+
+            // Nettoyage des entrées
+            const PRENOMClean = sanitizeInput(PRENOM);
+            const NOMClean = sanitizeInput(NOM);
+
+            console.log(`[RECHERCHE] Entrées brutes: PRENOM="${PRENOM}", NOM="${NOM}"`);
+            console.log(`[RECHERCHE] Entrées nettoyées: PRENOM="${PRENOMClean}", NOM="${NOMClean}"`);
+
+            showLoading(true);
+            setFormEnabled(false);
+
+            try {
+                console.log(`[RECHERCHE] Recherche dans MEMBRES: ${PRENOMClean} ${NOMClean}`);
+
+                // ✅ ÉTAPE 1 : Chercher dans la table MEMBRES (authentification)
+                // Récupère REF au lieu de id
+                const { data: memberData, error: memberError } = await sbClient
+                    .from('MEMBRES')
+                    .select('REF, PRENOM, NOM')
+                    .ilike('PRENOM', `%${PRENOMClean}%`)
+                    .ilike('NOM', `%${NOMClean}%`)
+                    .limit(1);
+
+                if (memberError) {
+                    console.error('[SUPABASE ERROR] Erreur lors de la recherche dans MEMBRES:', memberError);
+                    if (memberError.code === '401' || memberError.code === '403') {
+                        showMessage('Accès refusé au tableau MEMBRES. Vérifiez les permissions RLS.', 'error');
+                    } else {
+                        showMessage('Erreur lors de la vérification. Veuillez réessayer.', 'error');
+                    }
+                    return null;
+                }
+
+                console.log(`[RECHERCHE] Résultats MEMBRES:`, memberData);
+                
+                // Log la visite dès qu'on identifie le membre
+                if (memberData && memberData.length > 0) {
+                    await logVisit(memberData[0].REF, 'login_page');
+                }
+                
+                return memberData;
+
+            } catch (err) {
+                console.error('[ERREUR FATALE] Exception non gérée:', err);
+                showMessage('Une erreur inattendue est survenue.', 'error');
+                return null;
+            } finally {
+                showLoading(false);
+                setFormEnabled(true);
+            }
+        }
+
+        // ===========================
+        // LOGIQUE MÉTIER : Ajouter au tracking dans members_website
+        // ===========================
+        async function addToMembersWebsite(PRENOM, NOM) {
+            const PRENOMClean = sanitizeInput(PRENOM);
+            const NOMClean = sanitizeInput(NOM);
+
+            try {
+                console.log(`[TRACKING] Ajout à members_website: ${PRENOMClean} ${NOMClean}`);
+
+                // ✅ Insérer uniquement les colonnes qui existent réellement dans members_website
+                // Structure : id, prenom, nom, verified_at, created_at, updated_at, notes
+                const { data, error } = await sbClient
+                    .from('members_website')
+                    .insert([
+                        {
+                            prenom: PRENOMClean,
+                            nom: NOMClean
+                            // Les colonnes auto-générées (id, created_at, updated_at) sont gérées par Supabase
+                            // verified_at et notes restent NULL par défaut
+                        }
+                    ])
+                    .select();
+
+                if (error) {
+                    console.error('[SUPABASE ERROR] Erreur lors de l\'ajout à members_website:', error);
+                    // ⚠️ N'est pas bloquant - l'authentification réussit même si le tracking échoue
+                    console.warn('[TRACKING] L\'ajout au tracking a échoué, mais l\'authentification continue');
+                    return false;
+                }
+
+                console.log('[TRACKING] Succès:', data);
+                return true;
+
+            } catch (err) {
+                console.error('[ERREUR FATALE] Exception lors du tracking:', err);
+                console.warn('[TRACKING] L\'ajout au tracking a échoué, mais l\'authentification continue');
+                return false;
+            }
+        }
+
+        // ===========================
+        // LOGIQUE MÉTIER : Enregistrement complet
+        // ===========================
+        async function registerMember(PRENOM, NOM) {
+            const PRENOMClean = sanitizeInput(PRENOM);
+            const NOMClean = sanitizeInput(NOM);
+
+            showLoading(true);
+            setFormEnabled(false);
+            hideMessage();
+
+            try {
+                console.log(`[ENREGISTREMENT] Enregistrement de: ${PRENOMClean} ${NOMClean}`);
+
+                // ✅ ÉTAPE 1 : Enregistrer directement dans members_website
+                // 🔧 CORRECTION 42501 : Ne pas insérer dans MEMBRES (RLS policy), utiliser members_website
+                // ⚠️ Structure members_website : id, prenom, nom, verified_at, created_at, updated_at, notes
+                // On n'insère que prenom et nom - les autres colonnes sont auto-générées ou NULL
+                const { data: memberInserted, error: memberError } = await sbClient
+                    .from('members_website')
+                    .insert([
+                        {
+                            prenom: PRENOMClean,
+                            nom: NOMClean
+                        }
+                    ])
+                    .select();
+
+                if (memberError) {
+                    console.error('[SUPABASE ERROR] Erreur lors de l\'insertion dans members_website:', memberError);
+                    if (memberError.code === '23505') {
+                        showMessage('Cet utilisateur est déjà enregistré.', 'info');
+                    } else {
+                        showMessage('Erreur lors de l\'enregistrement. Veuillez réessayer.', 'error');
+                    }
+                    return false;
+                }
+
+                console.log('[ENREGISTREMENT] Ajout à members_website réussi:', memberInserted);
+
+                storeUserSession(PRENOMClean, NOMClean, false, null);
+                showMessage('Bienvenue ! Redirection en cours...', 'success');
+                
+                setTimeout(() => {
+                    redirectToDashboard();
+                }, 1500);
+
+                return true;
+
+            } catch (err) {
+                console.error('[ERREUR FATALE] Exception lors de l\'enregistrement:', err);
+                showMessage('Une erreur inattendue est survenue.', 'error');
+                return false;
+            } finally {
+                showLoading(false);
+                setFormEnabled(true);
+            }
+        }
+
+        // ===========================
+        // GESTIONNAIRES D'ÉVÉNEMENTS
+        // ===========================
+        document.getElementById('btnLogin').addEventListener('click', async () => {
+            const PRENOM = document.getElementById('PRENOM').value;
+            const NOM = document.getElementById('NOM').value;
+
+            const members = await searchMemberInMembres(PRENOM, NOM);
+
+            if (members === null) {
+                // Erreur déjà gérée dans searchMemberInMembres
+                return;
+            }
+
+            if (members.length > 0) {
+                // ✅ Membre trouvé dans MEMBRES
+                console.log('[AUTHENTIFICATION] Membre trouvé dans MEMBRES, connexion autorisée');
+                const memberRef = members[0].REF;
+                
+                // Ajouter au tracking dans members_website
+                const PRENOMClean = sanitizeInput(PRENOM);
+                const NOMClean = sanitizeInput(NOM);
+                await addToMembersWebsite(PRENOMClean, NOMClean);
+                
+                storeUserSession(PRENOMClean, NOMClean, false, memberRef);
+                showMessage('Bienvenue ! Redirection en cours...', 'success');
+                setTimeout(() => {
+                    redirectToDashboard();
+                }, 1000);
+            } else {
+                // ❌ Membre non trouvé : proposer l'enregistrement
+                console.log('[AUTHENTIFICATION] Membre non trouvé dans MEMBRES');
+                document.getElementById('registerPrompt').style.display = 'block';
+                showMessage('Utilisateur non reconnu. Voulez-vous vous enregistrer ?', 'info');
+            }
+        });
+
+        document.getElementById('btnRegister').addEventListener('click', async () => {
+            const PRENOM = document.getElementById('PRENOM').value;
+            const NOM = document.getElementById('NOM').value;
+            document.getElementById('registerPrompt').style.display = 'none';
+
+            await registerMember(PRENOM, NOM);
+        });
+
+        document.getElementById('btnCancelRegister').addEventListener('click', () => {
+            document.getElementById('registerPrompt').style.display = 'none';
+            const PRENOM = document.getElementById('PRENOM').value;
+            const NOM = document.getElementById('NOM').value;
+            const PRENOMClean = sanitizeInput(PRENOM);
+            const NOMClean = sanitizeInput(NOM);
+            
+            storeUserSession(PRENOMClean, NOMClean, true, null);
+            showMessage('Connexion en mode invité. Redirection en cours...', 'success');
+            setTimeout(() => {
+                redirectToDashboard();
+            }, 1000);
+        });
+
+        document.getElementById('btnGuest').addEventListener('click', () => {
+            const PRENOM = document.getElementById('PRENOM').value || 'Invité';
+            const NOM = document.getElementById('NOM').value || '';
+            const PRENOMClean = sanitizeInput(PRENOM);
+            const NOMClean = sanitizeInput(NOM);
+            
+            storeUserSession(PRENOMClean, NOMClean, true, null);
+            showMessage('Connexion en mode invité. Redirection en cours...', 'success');
+            setTimeout(() => {
+                redirectToDashboard();
+            }, 1000);
+        });
+
+        // Permettre la validation au clavier (Entrée)
+        document.getElementById('NOM').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('btnLogin').click();
+            }
+        });
+
+        // ===========================
+        // INITIALISATION À LA CHARGE
+        // ===========================
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('[INIT] Initialisation de la page de connexion');
+            
+            if (!initSupabaseClient()) {
+                showMessage('Configuration Supabase incomplète. Vérifiez vos clés d\'API.', 'error');
+                setFormEnabled(false);
+            } else {
+                console.log('[INIT] Page prête');
+            }
+
+            // Focus sur le premier input
+            document.getElementById('PRENOM').focus();
+        });
+    </script>
+</body>
+</html>
