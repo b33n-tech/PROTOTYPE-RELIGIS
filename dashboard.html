@@ -788,13 +788,17 @@
 
             if (isClientReady) {
                 loadUserSession();
-
+                initCarousel();
+                
                 if (typeof trackCurrentPage === 'function') {
                     console.log('[SESSION] Lancement du tracking télémétrie...');
-                    await trackCurrentPage('dashboard');
+                    try {
+                        await trackCurrentPage('dashboard');
+                    } catch (error) {
+                        console.error('[TELEMETRY] Erreur non bloquante:', error);
+                    }
                 }
-
-                initCarousel();
+                
                 loadNews();
             } else {
                 console.error("L'application n'a pas pu démarrer : Supabase est indisponible.");
