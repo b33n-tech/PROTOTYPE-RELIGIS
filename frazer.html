@@ -620,11 +620,42 @@
     </main>
 
     <script>
-        function initSupabaseClient() {
+        async function initializeApp() {
             try {
-                return typeof window.supabase !== 'undefined';
+                const isSupabaseReady = typeof window.supabase !== 'undefined';
+                
+                if (!isSupabaseReady) {
+                    console.error("L'application n'a pas pu démarrer : Supabase est indisponible.");
+                    loadUserSession();
+                    handleQRImage();
+                    return false;
+                }
+
+                await new Promise(resolve => {
+                    const checkInterval = setInterval(() => {
+                        if (typeof window.sbClient !== 'undefined' && window.sbClient !== null) {
+                            clearInterval(checkInterval);
+                            resolve();
+                        }
+                    }, 50);
+                    
+                    setTimeout(() => {
+                        clearInterval(checkInterval);
+                        resolve();
+                    }, 3000);
+                });
+
+                if (typeof trackCurrentPage === 'function') {
+                    await trackCurrentPage('frazer');
+                }
+                
+                loadUserSession();
+                handleQRImage();
+                return true;
             } catch (error) {
-                console.error('Supabase initialization failed:', error);
+                console.error('Erreur lors de l\'initialisation :', error);
+                loadUserSession();
+                handleQRImage();
                 return false;
             }
         }
@@ -649,18 +680,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const isClientReady = initSupabaseClient();
-            
-            if (isClientReady) {
-                if (typeof trackCurrentPage === 'function') {
-                    await trackCurrentPage('frazer');
-                }
-                
-                loadUserSession();
-                handleQRImage();
-            } else {
-                console.error("L'application n'a pas pu démarrer : Supabase est indisponible.");
-            }
+            await initializeApp();
         });
     </script>
 </body>
