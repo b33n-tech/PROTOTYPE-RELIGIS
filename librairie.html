@@ -592,19 +592,16 @@
         }
 
         function formatDate(dateString) {
-            // Si la date est nulle, undefined ou vide, on retourne un texte par défaut
             if (!dateString) {
                 return "Date inconnue";
             }
 
             const date = new Date(dateString);
 
-            // Vérifie si la date est valide (le "is finite" de l'erreur)
             if (isNaN(date.getTime())) {
                 return "Date invalide";
             }
 
-            // Retourne le format souhaité (adaptez selon vos besoins)
             return date.toLocaleDateString('fr-FR', {
                 day: '2-digit',
                 month: '2-digit',
@@ -632,33 +629,6 @@
         }
 
         // ===========================
-        // FONCTION DE LOGGING
-        // ===========================
-        async function logVisit(userRef, pageName) {
-            try {
-                const userRefValue = userRef || sessionStorage.getItem('user_ref');
-                if (!userRefValue || userRefValue === 'null') {
-                    console.log('[LOG] Accès invité - pas de logging');
-                    return;
-                }
-
-                console.log(`[LOG] Enregistrement visite: user_ref=${userRefValue}, page=${pageName}`);
-
-                const { error } = await sbClient
-                    .from('logs_website')
-                    .insert([{ user_id: userRefValue, page: pageName }]);
-
-                if (error) {
-                    console.error('[LOG ERROR]', error);
-                } else {
-                    console.log(`[LOG] Visite enregistrée avec succès`);
-                }
-            } catch (err) {
-                console.error('[LOG FATAL]', err);
-            }
-        }
-
-        // ===========================
         // LOGIQUE MÉTIER : Charger les contenus
         // ===========================
         async function loadContents() {
@@ -681,7 +651,6 @@
                 filteredContents = allContents;
 
                 renderContentList();
-                logVisit(null, 'library_page');
 
                 return true;
 
@@ -819,7 +788,6 @@
             document.getElementById('btnOpenResource').addEventListener('click', () => {
                 if (selectedContent.URL) {
                     window.open(selectedContent.URL, '_blank');
-                    logVisit(null, `content_opened_${selectedContent.REF}`);
                 }
             });
 
@@ -834,52 +802,6 @@
                     }, 2000);
                 });
             });
-        }
-
-        // ===========================
-        // LOGIQUE MÉTIER : Télécharger en CSV
-        // ===========================
-        function downloadAsCSV() {
-            try {
-                console.log('[EXPORT] Téléchargement des contenus en CSV');
-
-                const headers = ['REF', 'SUJET', 'SOURCE', 'TYPE', 'TYPE1', 'TYPE2', 'DATE_PUBLICATION', 'DATE_COLLECTE', 'URL'];
-                
-                const csvData = [
-                    headers.join(','),
-                    ...filteredContents.map(item =>
-                        [
-                            item.REF,
-                            `"${(item.SUJET || '').replace(/"/g, '""')}"`,
-                            `"${(item.SOURCE || '').replace(/"/g, '""')}"`,
-                            item.TYPE || '',
-                            item.TYPE1 || '',
-                            item.TYPE2 || '',
-                            item.DATE_PUBLICATION || '',
-                            item.DATE_COLLECTE || '',
-                            item.URL || ''
-                        ].join(',')
-                    )
-                ].join('\n');
-
-                const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                
-                link.setAttribute('href', url);
-                link.setAttribute('download', `ReligiS_Contenus_${new Date().toISOString().slice(0, 10)}.csv`);
-                link.style.visibility = 'hidden';
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                showMessage('✓ Export CSV téléchargé avec succès', 'success');
-
-            } catch (err) {
-                console.error('[EXPORT ERROR]', err);
-                showMessage('Erreur lors de l\'export.', 'error');
-            }
         }
 
         // ===========================
@@ -925,14 +847,10 @@
             console.log('[INIT] Page Librairie prête');
         });
     </script>
-    <!-- ... le contenu de ta page ... -->
 
     <!-- Inclusion du SDK Supabase via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <!-- Ton bloc de télémétrie modulaire -->
     <script src="telemetry.js"></script>
-</body>
-</html>
 </body>
 </html>
