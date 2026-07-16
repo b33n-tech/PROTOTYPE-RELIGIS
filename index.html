@@ -354,7 +354,7 @@
             setFormEnabled(false);
 
             try {
-                console.log(`[RECHERCHE] Recherche dans MEMBRES: ${PRENOMClean} ${NOMClean}`);
+                console.log(`[RECHERCHE] Recherche simultanée dans MEMBRES et members_website`);
 
                 const { data: memberData, error: memberError } = await sbClient
                     .from('MEMBRES')
@@ -373,15 +373,6 @@
                     return null;
                 }
 
-                console.log(`[RECHERCHE] Résultats MEMBRES:`, memberData);
-                
-                if (memberData && memberData.length > 0) {
-                    await logVisit(memberData[0].REF, 'login_page');
-                    return memberData;
-                }
-
-                console.log(`[RECHERCHE] Non trouvé dans MEMBRES, recherche dans members_website...`);
-                
                 const { data: websiteData, error: websiteError } = await sbClient
                     .from('members_website')
                     .select('id, prenom, nom')
@@ -395,8 +386,14 @@
                     return null;
                 }
 
+                console.log(`[RECHERCHE] Résultats MEMBRES:`, memberData);
                 console.log(`[RECHERCHE] Résultats members_website:`, websiteData);
-                
+
+                if (memberData && memberData.length > 0) {
+                    await logVisit(memberData[0].REF, 'login_page');
+                    return memberData;
+                }
+
                 if (websiteData && websiteData.length > 0) {
                     return websiteData.map(item => ({
                         REF: item.id,
