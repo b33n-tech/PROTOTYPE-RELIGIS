@@ -3,23 +3,28 @@
  * Script modulaire de tracking des pages avec Supabase
  * Logs les passages utilisateurs dans la table logs_website
  * 
- * ===== CONFIGURATION SUPABASE =====
- * À compléter avec vos identifiants Supabase
+ * ===== ARCHITECTURE =====
+ * Ce script NE crée PAS son propre client Supabase.
+ * Il s'appuie sur 'sbClient' global initialisé par la page principale (ex: login.html)
  */
-
-// ===== ZONE À REMPLIR : VOS CLÉS SUPABASE =====
-const SUPABASE_URL = 'https://rkxaprpcetborlslblqj.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_NpdAjISRkvlmuO6cY3xljA_79dxiqkZ';
-// ========================================
-
-// Initialise Supabase
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 // Configuration du tracking
 const TELEMETRY_CONFIG = {
   debug: true, // true = affiche logs console, false = silent
   logTableName: 'logs_website',
 };
+
+/**
+ * Récupère le client Supabase global
+ * @returns {Object|null} Le client Supabase ou null s'il n'existe pas
+ */
+function getSupabaseClient() {
+  if (typeof sbClient === 'undefined') {
+    console.error('[TELEMETRY] ❌ Client Supabase global (sbClient) non initialisé. Vérifiez que la page parent le définit.');
+    return null;
+  }
+  return sbClient;
+}
 
 /**
  * FONCTION PRINCIPALE : Enregistre un passage utilisateur
@@ -34,6 +39,12 @@ async function logPageView(memberId, pageName) {
       memberId,
       pageName,
     });
+    return false;
+  }
+
+  // Récupère le client global
+  const supabase = getSupabaseClient();
+  if (!supabase) {
     return false;
   }
 
@@ -151,4 +162,4 @@ window.getMemberId = getMemberId;
 window.clearMemberId = clearMemberId;
 window.trackCurrentPage = trackCurrentPage;
 
-console.log('[TELEMETRY] ✓ Script chargé et prêt');
+console.log('[TELEMETRY] ✓ Script chargé et prêt (utilise sbClient global)');
