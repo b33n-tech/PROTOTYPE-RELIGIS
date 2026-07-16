@@ -1,100 +1,154 @@
-// ===========================
-// TELEMETRY MODULE
-// ===========================
-// Module modulaire pour tracker les visites des pages
-// Schéma logs_website: id (auto), member_id, page, heure, jour
+/**
+ * TELEMETRY.JS
+ * Script modulaire de tracking des pages avec Supabase
+ * Logs les passages utilisateurs dans la table logs_website
+ * 
+ * ===== CONFIGURATION SUPABASE =====
+ * À compléter avec vos identifiants Supabase
+ */
 
-(async function() {
-    'use strict';
+// ===== ZONE À REMPLIR : VOS CLÉS SUPABASE =====
+const SUPABASE_URL = 'https://rkxaprpcetborlslblqj.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_NpdAjISRkvlmuO6cY3xljA_79dxiqkZ';
+// ========================================
 
-    // Configuration Supabase
-    const SUPABASE_URL = 'https://rkxaprpcetborlslblqj.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_NpdAjISRkvlmuO6cY3xljA_79dxiqkZ';
+// Initialise Supabase
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Initialisation du client Supabase
-    let sbClient = null;
+// Configuration du tracking
+const TELEMETRY_CONFIG = {
+  debug: true, // true = affiche logs console, false = silent
+  logTableName: 'logs_website',
+};
 
-    function initSupabaseClient() {
-        try {
-            if (typeof supabase === 'undefined') {
-                console.error('[TELEMETRY] Supabase n\'est pas chargé');
-                return false;
-            }
-            sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log('[TELEMETRY] Client Supabase initialisé');
-            return true;
-        } catch (error) {
-            console.error('[TELEMETRY] Erreur initialisation Supabase:', error);
-            return false;
-        }
+/**
+ * FONCTION PRINCIPALE : Enregistre un passage utilisateur
+ * @param {number} memberId - ID du membre (depuis members_website)
+ * @param {string} pageName - Nom de la page (ex: 'dashboard', 'wiki', 'frazer', 'librairie')
+ * @returns {Promise<boolean>} true si succès, false sinon
+ */
+async function logPageView(memberId, pageName) {
+  // Validation des paramètres
+  if (!memberId || !pageName) {
+    console.warn('[TELEMETRY] ❌ Erreur: memberId ou pageName manquant', {
+      memberId,
+      pageName,
+    });
+    return false;
+  }
+
+  try {
+    // Récupère l'heure et le jour actuels au format français
+    const now = new Date();
+    const heure = now.toLocaleTimeString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    const jour = now.toLocaleDateString('fr-FR');
+
+    // Prépare les données pour Supabase
+    const logData = {
+      member_id: memberId,
+      page: pageName,
+      heure: heure,
+      jour: jour,
+    };
+
+    if (TELEMETRY_CONFIG.debug) {
+      console.log('[TELEMETRY] 📝 Enregistrement:', logData);
     }
 
-    // Obtenir le nom de la page actuelle
-    function getCurrentPageName() {
-        const pathname = window.location.pathname;
-        const filename = pathname.split('/').pop() || 'index.html';
-        return filename.replace('.html', '');
+    // Insère dans la table logs_website
+    const { data, error } = await supabase
+      .from(TELEMETRY_CONFIG.logTableName)
+      .insert([logData]);
+
+    if (error) {
+      console.error('[TELEMETRY] ❌ Erreur Supabase:', error.message);
+      return false;
     }
 
-    // Récupérer le member_id du sessionStorage
-    function getMemberId() {
-        const userRef = sessionStorage.getItem('user_ref');
-        return userRef;
+    if (TELEMETRY_CONFIG.debug) {
+      console.log('[TELEMETRY] ✅ Enregistré avec succès');
     }
 
-    // Enregistrer une visite
-    async function logPageVisit() {
-        try {
-            const memberId = getMemberId();
-            const pageName = getCurrentPageName();
+    return true;
+  } catch (err) {
+    console.error('[TELEMETRY] ❌ Exception:', err.message);
+    return false;
+  }
+}
 
-            // Ne logger que si on a un member_id
-            if (!memberId) {
-                console.log('[TELEMETRY] Pas de member_id - visite non loggée (invité ou session vide)');
-                return;
-            }
-
-            const now = new Date();
-            const heure = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const jour = now.toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' });
-
-            console.log(`[TELEMETRY] Enregistrement de la visite: member_id=${memberId}, page=${pageName}, heure=${heure}, jour=${jour}`);
-
-            const { data, error } = await sbClient
-                .from('logs_website')
-                .insert([
-                    {
-                        member_id: memberId,
-                        page: pageName,
-                        heure: heure,
-                        jour: jour
-                    }
-                ]);
-
-            if (error) {
-                console.error('[TELEMETRY] Erreur lors de l\'enregistrement:', error);
-            } else {
-                console.log('[TELEMETRY] Visite enregistrée avec succès');
-            }
-
-        } catch (err) {
-            console.error('[TELEMETRY] Exception lors du logging:', err);
-        }
+/**
+ * Stocke le member_id après connexion (à appeler depuis index.html)
+ * @param {number} memberId - ID du membre à stocker
+ */
+function setMemberId(memberId) {
+  try {
+    localStorage.setItem('member_id', memberId.toString());
+    if (TELEMETRY_CONFIG.debug) {
+      console.log('[TELEMETRY] 💾 Member ID stocké:', memberId);
     }
+  } catch (err) {
+    console.error('[TELEMETRY] ❌ Erreur stockage member_id:', err.message);
+  }
+}
 
-    // Initialisation au chargement du DOM
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('[TELEMETRY] DOM chargé, initialisation du module');
-            if (initSupabaseClient()) {
-                await logPageVisit();
-            }
-        });
-    } else {
-        console.log('[TELEMETRY] DOM déjà chargé, initialisation immédiate du module');
-        if (initSupabaseClient()) {
-            await logPageVisit();
-        }
+/**
+ * Récupère le member_id du localStorage
+ * @returns {number|null} Le member_id ou null si non trouvé
+ */
+function getMemberId() {
+  try {
+    const memberId = localStorage.getItem('member_id');
+    return memberId ? parseInt(memberId, 10) : null;
+  } catch (err) {
+    console.warn('[TELEMETRY] ❌ Erreur accès localStorage:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Efface le member_id (à appeler au logout)
+ */
+function clearMemberId() {
+  try {
+    localStorage.removeItem('member_id');
+    if (TELEMETRY_CONFIG.debug) {
+      console.log('[TELEMETRY] 🗑️ Member ID effacé');
     }
+  } catch (err) {
+    console.error('[TELEMETRY] ❌ Erreur suppression member_id:', err.message);
+  }
+}
 
-})();
+/**
+ * Fonction helper pour tracker la page actuelle
+ * Récupère automatiquement le member_id du localStorage
+ * @param {string} pageName - Nom de la page actuelle
+ * @returns {Promise<boolean>}
+ */
+async function trackCurrentPage(pageName) {
+  const memberId = getMemberId();
+
+  if (!memberId) {
+    if (TELEMETRY_CONFIG.debug) {
+      console.warn(
+        '[TELEMETRY] ⚠️ Pas de member_id. L\'utilisateur n\'est pas connecté.'
+      );
+    }
+    return false;
+  }
+
+  return await logPageView(memberId, pageName);
+}
+
+// Expose les fonctions globalement
+window.logPageView = logPageView;
+window.setMemberId = setMemberId;
+window.getMemberId = getMemberId;
+window.clearMemberId = clearMemberId;
+window.trackCurrentPage = trackCurrentPage;
+
+console.log('[TELEMETRY] ✓ Script chargé et prêt');
