@@ -257,15 +257,9 @@
     </div>
 
     <script>
-        // ===========================
-        // CONFIGURATION SUPABASE
-        // ===========================
         const SUPABASE_URL = 'https://rkxaprpcetborlslblqj.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NpdAjISRkvlmuO6cY3xljA_79dxiqkZ';
 
-        // ===========================
-        // INITIALISATION CLIENT
-        // ===========================
         let sbClient = null;
 
         function initSupabaseClient() {
@@ -280,9 +274,6 @@
             }
         }
 
-        // ===========================
-        // UTILITY FUNCTIONS
-        // ===========================
         function showMessage(text, type = 'info') {
             const messageBox = document.getElementById('messageBox');
             messageBox.textContent = text;
@@ -318,17 +309,12 @@
             window.location.href = 'dashboard.html';
         }
 
-        // Fonction de nettoyage des données
         function sanitizeInput(input) {
             return input.trim().replace(/\s+/g, ' ');
         }
 
-        // ===========================
-        // FONCTION DE LOGGING - RÉUTILISABLE
-        // ===========================
         async function logVisit(userRef, pageName) {
             try {
-                // userRef correspond à la colonne 'REF' de MEMBRES
                 console.log(`[LOG] Enregistrement de la visite: user_ref=${userRef}, page=${pageName}`);
                 
                 const { error } = await sbClient
@@ -350,19 +336,14 @@
             }
         }
 
-        // ===========================
-        // LOGIQUE MÉTIER : Recherche de membre dans MEMBRES
-        // ===========================
         async function searchMemberInMembres(PRENOM, NOM) {
             hideMessage();
 
-            // Validation basique
             if (!PRENOM.trim() || !NOM.trim()) {
                 showMessage('Veuillez remplir tous les champs.', 'error');
                 return null;
             }
 
-            // Nettoyage des entrées
             const PRENOMClean = sanitizeInput(PRENOM);
             const NOMClean = sanitizeInput(NOM);
 
@@ -375,8 +356,6 @@
             try {
                 console.log(`[RECHERCHE] Recherche dans MEMBRES: ${PRENOMClean} ${NOMClean}`);
 
-                // ✅ ÉTAPE 1 : Chercher dans la table MEMBRES (authentification)
-                // Récupère REF au lieu de id
                 const { data: memberData, error: memberError } = await sbClient
                     .from('MEMBRES')
                     .select('REF, PRENOM, NOM')
@@ -396,12 +375,37 @@
 
                 console.log(`[RECHERCHE] Résultats MEMBRES:`, memberData);
                 
-                // Log la visite dès qu'on identifie le membre
                 if (memberData && memberData.length > 0) {
                     await logVisit(memberData[0].REF, 'login_page');
+                    return memberData;
+                }
+
+                console.log(`[RECHERCHE] Non trouvé dans MEMBRES, recherche dans members_website...`);
+                
+                const { data: websiteData, error: websiteError } = await sbClient
+                    .from('members_website')
+                    .select('id, prenom, nom')
+                    .ilike('prenom', `%${PRENOMClean}%`)
+                    .ilike('nom', `%${NOMClean}%`)
+                    .limit(1);
+
+                if (websiteError) {
+                    console.error('[SUPABASE ERROR] Erreur lors de la recherche dans members_website:', websiteError);
+                    showMessage('Erreur lors de la vérification. Veuillez réessayer.', 'error');
+                    return null;
+                }
+
+                console.log(`[RECHERCHE] Résultats members_website:`, websiteData);
+                
+                if (websiteData && websiteData.length > 0) {
+                    return websiteData.map(item => ({
+                        REF: item.id,
+                        PRENOM: item.prenom,
+                        NOM: item.nom
+                    }));
                 }
                 
-                return memberData;
+                return [];
 
             } catch (err) {
                 console.error('[ERREUR FATALE] Exception non gérée:', err);
@@ -413,9 +417,6 @@
             }
         }
 
-        // ===========================
-        // LOGIQUE MÉTIER : Ajouter au tracking dans members_website
-        // ===========================
         async function addToMembersWebsite(PRENOM, NOM) {
             const PRENOMClean = sanitizeInput(PRENOM);
             const NOMClean = sanitizeInput(NOM);
@@ -423,23 +424,18 @@
             try {
                 console.log(`[TRACKING] Ajout à members_website: ${PRENOMClean} ${NOMClean}`);
 
-                // ✅ Insérer uniquement les colonnes qui existent réellement dans members_website
-                // Structure : id, prenom, nom, verified_at, created_at, updated_at, notes
                 const { data, error } = await sbClient
                     .from('members_website')
                     .insert([
                         {
                             prenom: PRENOMClean,
                             nom: NOMClean
-                            // Les colonnes auto-générées (id, created_at, updated_at) sont gérées par Supabase
-                            // verified_at et notes restent NULL par défaut
                         }
                     ])
                     .select();
 
                 if (error) {
                     console.error('[SUPABASE ERROR] Erreur lors de l\'ajout à members_website:', error);
-                    // ⚠️ N'est pas bloquant - l'authentification réussit même si le tracking échoue
                     console.warn('[TRACKING] L\'ajout au tracking a échoué, mais l\'authentification continue');
                     return false;
                 }
@@ -454,9 +450,6 @@
             }
         }
 
-        // ===========================
-        // LOGIQUE MÉTIER : Enregistrement complet
-        // ===========================
         async function registerMember(PRENOM, NOM) {
             const PRENOMClean = sanitizeInput(PRENOM);
             const NOMClean = sanitizeInput(NOM);
@@ -468,10 +461,6 @@
             try {
                 console.log(`[ENREGISTREMENT] Enregistrement de: ${PRENOMClean} ${NOMClean}`);
 
-                // ✅ ÉTAPE 1 : Enregistrer directement dans members_website
-                // 🔧 CORRECTION 42501 : Ne pas insérer dans MEMBRES (RLS policy), utiliser members_website
-                // ⚠️ Structure members_website : id, prenom, nom, verified_at, created_at, updated_at, notes
-                // On n'insère que prenom et nom - les autres colonnes sont auto-générées ou NULL
                 const { data: memberInserted, error: memberError } = await sbClient
                     .from('members_website')
                     .insert([
@@ -513,9 +502,6 @@
             }
         }
 
-        // ===========================
-        // GESTIONNAIRES D'ÉVÉNEMENTS
-        // ===========================
         document.getElementById('btnLogin').addEventListener('click', async () => {
             const PRENOM = document.getElementById('PRENOM').value;
             const NOM = document.getElementById('NOM').value;
@@ -523,16 +509,13 @@
             const members = await searchMemberInMembres(PRENOM, NOM);
 
             if (members === null) {
-                // Erreur déjà gérée dans searchMemberInMembres
                 return;
             }
 
             if (members.length > 0) {
-                // ✅ Membre trouvé dans MEMBRES
-                console.log('[AUTHENTIFICATION] Membre trouvé dans MEMBRES, connexion autorisée');
+                console.log('[AUTHENTIFICATION] Membre trouvé, connexion autorisée');
                 const memberRef = members[0].REF;
                 
-                // Ajouter au tracking dans members_website
                 const PRENOMClean = sanitizeInput(PRENOM);
                 const NOMClean = sanitizeInput(NOM);
                 await addToMembersWebsite(PRENOMClean, NOMClean);
@@ -543,8 +526,7 @@
                     redirectToDashboard();
                 }, 1000);
             } else {
-                // ❌ Membre non trouvé : proposer l'enregistrement
-                console.log('[AUTHENTIFICATION] Membre non trouvé dans MEMBRES');
+                console.log('[AUTHENTIFICATION] Membre non trouvé');
                 document.getElementById('registerPrompt').style.display = 'block';
                 showMessage('Utilisateur non reconnu. Voulez-vous vous enregistrer ?', 'info');
             }
@@ -585,16 +567,12 @@
             }, 1000);
         });
 
-        // Permettre la validation au clavier (Entrée)
         document.getElementById('NOM').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 document.getElementById('btnLogin').click();
             }
         });
 
-        // ===========================
-        // INITIALISATION À LA CHARGE
-        // ===========================
         window.addEventListener('DOMContentLoaded', () => {
             console.log('[INIT] Initialisation de la page de connexion');
             
@@ -605,7 +583,6 @@
                 console.log('[INIT] Page prête');
             }
 
-            // Focus sur le premier input
             document.getElementById('PRENOM').focus();
         });
     </script>
