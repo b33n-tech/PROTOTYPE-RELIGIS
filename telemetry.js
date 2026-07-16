@@ -98,6 +98,7 @@ function clearMemberId() {
  * Fonction helper pour tracker la page
  */
 async function trackCurrentPage(pageName) {
+    console.log("[DEBUG TRACKING] Contenu total du sessionStorage:", JSON.stringify(sessionStorage));
     const memberId = getMemberId();
     if (!memberId) {
         if (TELEMETRY_CONFIG.debug) {
