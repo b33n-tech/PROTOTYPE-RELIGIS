@@ -9,13 +9,24 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="telemetry.js"></script>
 
-    <!-- 2. Configuration et initialisation centralisée -->
+    <!-- 2. Configuration centralisée unique -->
     <script>
         const SUPABASE_URL = 'https://rkxaprpcetborlslblqj.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NpdAjISRkvlmuO6cY3xljA_79dxiqkZ';
         
-        // Initialisation unique pour toute la page
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Initialisation unique et globale
+        let sbClient = null;
+        
+        function initSupabaseClient() {
+            try {
+                sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('[SUPABASE] Client initialisé avec succès');
+                return true;
+            } catch (error) {
+                console.error('[SUPABASE] Erreur lors de l\'initialisation du client:', error);
+                return false;
+            }
+        }
     </script>
     
     <style>
@@ -270,20 +281,6 @@
     </div>
 
     <script>
-        let sbClient = null;
-
-        function initSupabaseClient() {
-            try {
-                sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('[SUPABASE] Client initialisé avec succès');
-                return true;
-            } catch (error) {
-                console.error('[SUPABASE] Erreur lors de l\'initialisation du client:', error);
-                showMessage('Erreur de connexion au serveur. Vérifiez votre configuration Supabase.', 'error');
-                return false;
-            }
-        }
-
         function showMessage(text, type = 'info') {
             const messageBox = document.getElementById('messageBox');
             messageBox.textContent = text;
