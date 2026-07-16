@@ -6,14 +6,6 @@
     <title>ReligiS - Librairie</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="telemetry.js"></script>
-
-    <!-- ⚠️ SUPPRIMÉ : L'appel précoce à trackCurrentPage
-    <script>
-    window.addEventListener('load', async () => {
-    await trackCurrentPage('librairie'); // ❌ S'exécutait trop tôt
-    });
-    </script>
-    -->
     
     <style>
         * {
@@ -602,19 +594,16 @@
         }
 
         function formatDate(dateString) {
-            // Si la date est nulle, undefined ou vide, on retourne un texte par défaut
             if (!dateString) {
                 return "Date inconnue";
             }
 
             const date = new Date(dateString);
 
-            // Vérifie si la date est valide (le "is finite" de l'erreur)
             if (isNaN(date.getTime())) {
                 return "Date invalide";
             }
 
-            // Retourne le format souhaité (adaptez selon vos besoins)
             return date.toLocaleDateString('fr-FR', {
                 day: '2-digit',
                 month: '2-digit',
@@ -639,13 +628,6 @@
             
             const displayName = isGuest ? `${PRENOM} ${NOM} (Invité)` : `${PRENOM} ${NOM}`;
             document.getElementById('userDisplay').textContent = displayName;
-
-            // ✅ NOUVEAU : Lancer le tracking APRÈS avoir chargé la session
-            // Cela garantit que le member_id est disponible dans sessionStorage
-            if (typeof trackCurrentPage === 'function') {
-                console.log('[SESSION] Lancement du tracking télémétrie...');
-                trackCurrentPage('librairie');
-            }
         }
 
         // ===========================
@@ -687,14 +669,12 @@
         function applyFilters() {
             let filtered = allContents;
 
-            // Filtre par type
             if (currentFilter !== 'ALL') {
                 filtered = filtered.filter(item => {
                     return item.TYPE1 === currentFilter || item.TYPE2 === currentFilter;
                 });
             }
 
-            // Filtre par recherche
             const searchTerm = document.getElementById('searchBox').value.toLowerCase();
             if (searchTerm) {
                 filtered = filtered.filter(item => {
@@ -727,7 +707,6 @@
                 </div>
             `).join('');
 
-            // Ajouter les event listeners
             contentList.querySelectorAll('.content-item').forEach(item => {
                 item.addEventListener('click', () => {
                     const ref = item.getAttribute('data-ref');
@@ -746,10 +725,8 @@
 
             console.log('[SELECTION] Contenu sélectionné:', selectedContent.REF);
 
-            // Mettre à jour le sidebar
             renderContentList();
 
-            // Mettre à jour le preview
             renderPreview();
         }
 
@@ -804,7 +781,6 @@
 
             previewContainer.innerHTML = html;
 
-            // Event listeners pour les boutons
             document.getElementById('btnOpenResource').addEventListener('click', () => {
                 if (selectedContent.URL) {
                     window.open(selectedContent.URL, '_blank');
@@ -898,19 +874,25 @@
         // ===========================
         // INITIALISATION À LA CHARGE
         // ===========================
-        window.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             console.log('[INIT] Initialisation de la page Librairie');
 
-            loadUserSession();
+            const isClientReady = initSupabaseClient();
 
-            if (!initSupabaseClient()) {
-                showMessage('Configuration Supabase incomplète.', 'error');
-                return;
+            if (isClientReady) {
+                loadUserSession();
+
+                if (typeof trackCurrentPage === 'function') {
+                    console.log('[SESSION] Lancement du tracking télémétrie...');
+                    await trackCurrentPage('librairie');
+                }
+
+                await loadContents();
+
+                console.log('[INIT] Page Librairie prête');
+            } else {
+                console.error('[INIT] L\'application n\'a pas pu démarrer : Supabase est indisponible.');
             }
-
-            await loadContents();
-
-            console.log('[INIT] Page Librairie prête');
         });
     </script>
  
