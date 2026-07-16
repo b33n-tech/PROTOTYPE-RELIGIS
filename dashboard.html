@@ -563,24 +563,15 @@
         // ===========================
         function initSupabaseClient() {
             try {
-                sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('[SUPABASE] Client initialisé');
+        // MODIFICATION ICI : on attache le client à 'window'
+                window.sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+                console.log('[SUPABASE] Client initialisé et rendu global');
                 return true;
             } catch (error) {
                 console.error('[SUPABASE] Erreur initialisation:', error);
                 return false;
             }
-        }
-
-        function loadUserSession() {
-            const prenom = sessionStorage.getItem('user_prenom') || 'Invité';
-            const nom = sessionStorage.getItem('user_nom') || '';
-            const isGuest = sessionStorage.getItem('user_is_guest') === 'true';
-            
-            const displayName = nom ? `${prenom} ${nom}` : prenom;
-            document.getElementById('userDisplay').textContent = displayName + (isGuest ? ' (invité)' : '');
-            
-            console.log('[SESSION] Utilisateur:', displayName, 'Guest:', isGuest);
         }
 
         // ===========================
