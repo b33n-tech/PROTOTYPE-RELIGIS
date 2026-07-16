@@ -882,12 +882,12 @@
             if (isClientReady) {
                 loadUserSession();
 
+                await loadContents();
+
                 if (typeof trackCurrentPage === 'function') {
                     console.log('[SESSION] Lancement du tracking télémétrie...');
                     await trackCurrentPage('librairie');
                 }
-
-                await loadContents();
 
                 console.log('[INIT] Page Librairie prête');
             } else {
